@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+### ✨ Features
+
+- The Failed automations and Unavailable linked entities sections are hidden when they have nothing to list: the counters at the top already show 0. The Refresh button of the linked entities only appears when the section is shown.
+
 ## 1.1.0
 
 ### ✨ Features

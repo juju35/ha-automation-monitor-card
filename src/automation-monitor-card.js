@@ -48,8 +48,6 @@ const STRINGS = {
     n_problems: "{n} problems",
     monitored: "{n} automations monitored",
     last_failure: "Last failure {when}",
-    no_failure: "No failed automation",
-    no_unavailable: "All linked entities are available",
     step: "Step",
     streak: "{n} failures in a row",
     unavailable_since: "Unavailable {when}",
@@ -94,8 +92,6 @@ const STRINGS = {
     n_problems: "{n} problèmes",
     monitored: "{n} automatisations surveillées",
     last_failure: "Dernier échec {when}",
-    no_failure: "Aucune automatisation en échec",
-    no_unavailable: "Toutes les entités liées sont disponibles",
     step: "Étape",
     streak: "{n} échecs consécutifs",
     unavailable_since: "Indisponible {when}",
@@ -443,8 +439,6 @@ const FULL_STYLE = `
   .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
   .item .btn { background: var(--card-background-color, rgba(127,127,127,.12)); }
   .used { font-size: 12px; color: var(--secondary-text-color); }
-  .empty { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--secondary-text-color); padding: 2px 0; }
-  .empty .icon { color: var(--am-ok); }
   .more { align-self: center; }
   .fold { align-self: flex-start; }
   .items + .items { margin-top: 8px; }
@@ -523,7 +517,8 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         ? `<button class="btn" data-action="reset_all" title="${esc(this._t("reset_all"))}">${svgIcon(ICONS.clear)}<span>${esc(this._t("reset_all"))}</span></button>`
         : "";
     const title = this._sectionTitle(ICONS.robot_alert, this._t("failed_automations"), data.failures.length, "crit", button);
-    if (!data.failures.length) return `<div>${title}<div class="empty">${svgIcon(ICONS.check)}<span>${esc(this._t("no_failure"))}</span></div></div>`;
+    // Nothing to list: the counter above already says so.
+    if (!data.failures.length) return "";
     return `<div>${title}${this._foldable("failed", data.failures, this._config.collapse_failed, "unfold_failed", (a) => this._failure(a, controls))}</div>`;
   }
 
@@ -564,7 +559,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         ? `<button class="btn" data-action="rebuild" title="${esc(this._t("rebuild_title"))}">${svgIcon(ICONS.refresh)}<span>${esc(this._t("rebuild"))}</span></button>`
         : "";
     const title = this._sectionTitle(ICONS.disconnect, this._t("linked_unavailable"), data.linked.length, "warn", button);
-    if (!data.linked.length) return `<div>${title}<div class="empty">${svgIcon(ICONS.check)}<span>${esc(this._t("no_unavailable"))}</span></div></div>`;
+    if (!data.linked.length) return "";
     return `<div>${title}${this._foldable("linked", data.linked, this._config.collapse_linked, "unfold_linked", (e) => this._linked(e))}</div>`;
   }
 

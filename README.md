@@ -22,7 +22,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 
 - Two cards: a full **Automation Monitor Card** and a compact **Automation Monitor Mini Card**
 - Overall status at a glance: all good, or the number of problems
-- Counters of failed automations and unavailable linked entities
+- Counters of failed automations and unavailable linked entities; a list is only shown when it has something to show
 - Failed automations: name, time of the last failure, error message, failed step and consecutive failures
 - **Trace** and **Edit** buttons opening the automation's trace and editor in Home Assistant
 - **Clear** a failure (or **Clear all**) with the integration's `automation_monitor.reset` action, with confirmation
