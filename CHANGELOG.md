@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+### ✨ Features
+
+- When there are several failed automations or several unavailable linked entities, their list is now folded by default: a "Show the N automations" / "Show the N entities" button unfolds it, and "Fold" folds it again. The counters and the status stay visible. Set `collapse_failed: false` or `collapse_linked: false` (also in the visual editor) to always show the lists.
+
 ## 1.0.0
 
 First release of the Automation Monitor cards for Home Assistant, built for the [Automation Monitor integration](https://github.com/olli-dot-dev/ha-automation-monitor).

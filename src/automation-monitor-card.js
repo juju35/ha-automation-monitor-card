@@ -64,6 +64,9 @@ const STRINGS = {
     confirm_reset_all: "Clear all failed automations? They will be reported again on their next failure.",
     show_more: "Show {n} more",
     show_less: "Show less",
+    unfold_failed: "Show the {n} automations",
+    unfold_linked: "Show the {n} entities",
+    fold: "Fold",
     just_now: "just now",
     no_integration: "Automation Monitor not found. Is the Automation Monitor integration installed?",
     unavailable: "The Automation Monitor sensors are unavailable.",
@@ -73,6 +76,8 @@ const STRINGS = {
     show_logo: "Show Automation Monitor logo",
     show_failed: "Show failed automations",
     show_linked: "Show unavailable linked entities",
+    collapse_failed: "Fold the failed automations",
+    collapse_linked: "Fold the unavailable linked entities",
     show_controls: "Show action buttons",
     show_details: "Show error details",
     max_items: "Items shown per list",
@@ -105,6 +110,9 @@ const STRINGS = {
     confirm_reset_all: "Effacer toutes les automatisations en échec ? Elles seront de nouveau signalées au prochain échec.",
     show_more: "Afficher {n} de plus",
     show_less: "Afficher moins",
+    unfold_failed: "Afficher les {n} automatisations",
+    unfold_linked: "Afficher les {n} entités",
+    fold: "Replier",
     just_now: "à l'instant",
     no_integration: "Automation Monitor introuvable. L'intégration Automation Monitor est-elle installée ?",
     unavailable: "Les capteurs d'Automation Monitor sont indisponibles.",
@@ -114,6 +122,8 @@ const STRINGS = {
     show_logo: "Afficher le logo Automation Monitor",
     show_failed: "Afficher les automatisations en échec",
     show_linked: "Afficher les entités liées indisponibles",
+    collapse_failed: "Replier les automatisations en échec",
+    collapse_linked: "Replier les entités liées indisponibles",
     show_controls: "Afficher les boutons d'action",
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
@@ -436,6 +446,8 @@ const FULL_STYLE = `
   .empty { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--secondary-text-color); padding: 2px 0; }
   .empty .icon { color: var(--am-ok); }
   .more { align-self: center; }
+  .fold { align-self: flex-start; }
+  .items + .items { margin-top: 8px; }
 `;
 
 class AutomationMonitorCard extends AutomationMonitorBase {
@@ -488,6 +500,16 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     return `<div class="items">${shown.map(renderItem).join("")}${more}</div>`;
   }
 
+  // When a list has several items it is folded by default (unless the option is false): one click unfolds it.
+  _foldable(key, items, option, label, renderItem) {
+    if (items.length < 2 || option === false) return this._list(key, items, renderItem);
+    const open = this._expanded[`${key}_open`];
+    const toggle = `<div class="items"><button class="btn fold" data-action="expand" data-entity="${key}_open">${svgIcon(
+      open ? ICONS.chevron_up : ICONS.chevron_down
+    )}<span>${esc(open ? this._t("fold") : this._t(label, { n: items.length }))}</span></button></div>`;
+    return open ? `${this._list(key, items, renderItem)}${toggle}` : toggle;
+  }
+
   _sectionTitle(icon, label, n, cls, button) {
     return `<div class="section-title">${svgIcon(icon)}<span>${esc(label)}</span>${
       n ? `<span class="count ${cls}">${n}</span>` : ""
@@ -502,7 +524,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         : "";
     const title = this._sectionTitle(ICONS.robot_alert, this._t("failed_automations"), data.failures.length, "crit", button);
     if (!data.failures.length) return `<div>${title}<div class="empty">${svgIcon(ICONS.check)}<span>${esc(this._t("no_failure"))}</span></div></div>`;
-    return `<div>${title}${this._list("failed", data.failures, (a) => this._failure(a, controls))}</div>`;
+    return `<div>${title}${this._foldable("failed", data.failures, this._config.collapse_failed, "unfold_failed", (a) => this._failure(a, controls))}</div>`;
   }
 
   _failure(a, controls) {
@@ -543,7 +565,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         : "";
     const title = this._sectionTitle(ICONS.disconnect, this._t("linked_unavailable"), data.linked.length, "warn", button);
     if (!data.linked.length) return `<div>${title}<div class="empty">${svgIcon(ICONS.check)}<span>${esc(this._t("no_unavailable"))}</span></div></div>`;
-    return `<div>${title}${this._list("linked", data.linked, (e) => this._linked(e))}</div>`;
+    return `<div>${title}${this._foldable("linked", data.linked, this._config.collapse_linked, "unfold_linked", (e) => this._linked(e))}</div>`;
   }
 
   _linked(e) {
@@ -722,7 +744,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
 
 class AutomationMonitorCardEditor extends AutomationMonitorEditorBase {
   static get toggles() {
-    return [...super.toggles, ["show_details", true], ["show_controls", true]];
+    return [...super.toggles, ["collapse_failed", true], ["collapse_linked", true], ["show_details", true], ["show_controls", true]];
   }
 
   static extraFields() {

@@ -46,7 +46,8 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 
 const shots = [
   { file: "card", type: "automation-monitor-card", theme: "light", width: 480, config: {} },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 480, config: { language: "fr" } },
+  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 480, config: {}, clicks: ['[data-entity="failed_open"]', '[data-entity="linked_open"]'] },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 480, config: { language: "fr" }, clicks: ['[data-entity="failed_open"]', '[data-entity="linked_open"]'] },
   { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 480, config: { language: "fr" }, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
   { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: { language: "fr" } },
@@ -73,6 +74,10 @@ for (const s of shots) {
     },
     { type: s.type, config: s.config, states, entities, overrides: s.overrides }
   );
+  for (const sel of s.clicks || []) {
+    await page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);
+    await page.waitForTimeout(100);
+  }
   await page.waitForTimeout(800);
   const box = await page.locator("#root").boundingBox();
   await page.screenshot({
