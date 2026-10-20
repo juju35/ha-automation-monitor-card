@@ -27,7 +27,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - **Trace** and **Edit** buttons opening the automation's trace and editor in Home Assistant
 - **Clear** a failure (or **Clear all**) with the integration's `automation_monitor.reset` action, with confirmation
 - Unavailable linked entities: name, entity id, how long it has been unavailable and the automations, scripts and scenes that use it (click one to open its editor)
-- **Refresh** button rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
+- **Refresh** button in the header of both cards, always visible, rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
 - Lists with several items are folded by default and unfold in one click; long lists are cut to a configurable number of items, with a "Show more" button
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
@@ -117,7 +117,7 @@ language: fr
 | `collapse_failed` | full | `true` | Fold the failed automations when there are several (one click unfolds them); `false` always shows them |
 | `collapse_linked` | full | `true` | Fold the unavailable linked entities when there are several (one click unfolds them); `false` always shows them |
 | `show_details` | full | `true` | Error message of each failed automation |
-| `show_controls` | full | `true` | Clear, Clear all and Refresh buttons (the Trace and Edit links are always shown) |
+| `show_controls` | full | `true` | Clear and Clear all buttons (the Trace and Edit links and the Refresh button are always shown) |
 | `max_items` | full | `5` | Items shown per list before the "Show more" button |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |

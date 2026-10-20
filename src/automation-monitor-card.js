@@ -57,7 +57,7 @@ const STRINGS = {
     reset: "Clear",
     reset_all: "Clear all",
     rebuild: "Refresh",
-    rebuild_title: "Rebuild the list of entities used by automations, scripts and scenes",
+    rebuild_title: "rebuild the list of entities used by automations, scripts and scenes",
     confirm_reset: "Clear the failure of {name}? It will be reported again on its next failure.",
     confirm_reset_all: "Clear all failed automations? They will be reported again on their next failure.",
     show_more: "Show {n} more",
@@ -76,7 +76,7 @@ const STRINGS = {
     show_linked: "Show unavailable linked entities",
     collapse_failed: "Fold the failed automations",
     collapse_linked: "Fold the unavailable linked entities",
-    show_controls: "Show action buttons",
+    show_controls: "Show clear buttons",
     show_details: "Show error details",
     max_items: "Items shown per list",
     language: "Language",
@@ -101,7 +101,7 @@ const STRINGS = {
     reset: "Effacer",
     reset_all: "Tout effacer",
     rebuild: "Actualiser",
-    rebuild_title: "Reconstruire la liste des entités utilisées par les automatisations, scripts et scènes",
+    rebuild_title: "reconstruire la liste des entités utilisées par les automatisations, scripts et scènes",
     confirm_reset: "Effacer l'échec de {name} ? Il sera de nouveau signalé au prochain échec.",
     confirm_reset_all: "Effacer toutes les automatisations en échec ? Elles seront de nouveau signalées au prochain échec.",
     show_more: "Afficher {n} de plus",
@@ -120,7 +120,7 @@ const STRINGS = {
     show_linked: "Afficher les entités liées indisponibles",
     collapse_failed: "Replier les automatisations en échec",
     collapse_linked: "Replier les entités liées indisponibles",
-    show_controls: "Afficher les boutons d'action",
+    show_controls: "Afficher les boutons Effacer",
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
     language: "Langue",
@@ -241,6 +241,12 @@ const BASE_STYLE = `
   .header { display: flex; align-items: center; gap: 12px; padding: 16px 16px 8px; }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; }
   a.logo-link { display: flex; flex: none; }
+  .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
+             flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }
+  .refresh:hover { background: var(--secondary-background-color, rgba(127,127,127,.12)); color: var(--am-blue); }
+  .refresh .icon { width: 20px; height: 20px; }
+  .refresh.spin .icon { color: var(--am-blue); animation: am-spin 1s linear infinite; }
+  @keyframes am-spin { to { transform: rotate(360deg); } }
   .titles { flex: 1; min-width: 0; }
   .name { font-size: 18px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -330,6 +336,13 @@ class AutomationMonitorBase extends HTMLElement {
       if (window.confirm(this._t("confirm_reset_all"))) this._hass.callService(PLATFORM, "reset", {});
     } else if (action === "rebuild") {
       this._hass.callService(PLATFORM, "rebuild_linked_entities", {});
+      // Short spin of the button: the sensors update on their own once the rebuild is done.
+      this._refreshing = true;
+      this._update();
+      setTimeout(() => {
+        this._refreshing = false;
+        this._update();
+      }, 1200);
     } else if (entity) {
       this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: entity }, bubbles: true, composed: true }));
     }
@@ -379,6 +392,7 @@ class AutomationMonitorBase extends HTMLElement {
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
         </div>
         <span class="chip clickable ${status.cls}" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
+        <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
       </div>`;
   }
 
@@ -554,11 +568,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
   }
 
   _linkedSection(data) {
-    const button =
-      this._config.show_controls !== false
-        ? `<button class="btn" data-action="rebuild" title="${esc(this._t("rebuild_title"))}">${svgIcon(ICONS.refresh)}<span>${esc(this._t("rebuild"))}</span></button>`
-        : "";
-    const title = this._sectionTitle(ICONS.disconnect, this._t("linked_unavailable"), data.linked.length, "warn", button);
+    const title = this._sectionTitle(ICONS.disconnect, this._t("linked_unavailable"), data.linked.length, "warn");
     if (!data.linked.length) return "";
     return `<div>${title}${this._foldable("linked", data.linked, this._config.collapse_linked, "unfold_linked", (e) => this._linked(e))}</div>`;
   }

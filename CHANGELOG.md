@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+### ✨ Features
+
+- The Refresh button is now in the header of both cards and always visible, whatever is shown below. It rebuilds the list of entities used by automations, scripts and scenes (`automation_monitor.rebuild_linked_entities`) and spins briefly while doing so.
+
 ## 1.2.0
 
 ### ✨ Features
