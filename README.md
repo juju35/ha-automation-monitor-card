@@ -28,7 +28,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - **Clear** a failure (or **Clear all**) with the integration's `automation_monitor.reset` action, with confirmation
 - Unavailable linked entities: name, entity id, how long it has been unavailable and the automations, scripts and scenes that use it (click one to open its editor)
 - **Refresh** button in the header of both cards, always visible, rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
-- Lists with several items are folded by default and unfold in one click; long lists are cut to a configurable number of items, with a "Show more" button
+- Failed automations and unavailable linked entities are folded by default: click the section title to unfold them; long lists are cut to a configurable number of items, with a "Show more" button
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
 - Visual editor in the dashboard UI for both cards (no YAML needed)
@@ -69,7 +69,7 @@ Or manually:
 
 ### Visual editor
 
-Edit a dashboard, click **Add card** and search for **Automation Monitor Card** or **Automation Monitor Mini Card**. There is nothing to pick: the sensors of the integration are found automatically. Set an optional title, choose the sections to display, whether lists are folded, the action buttons, the number of items per list and the language. The preview updates live, and options left at their default are kept out of the generated YAML.
+Edit a dashboard, click **Add card** and search for **Automation Monitor Card** or **Automation Monitor Mini Card**. There is nothing to pick: the sensors of the integration are found automatically. Set an optional title, choose the sections to display, whether lists are expanded by default, the action buttons, the number of items per list and the language. The preview updates live, and options left at their default are kept out of the generated YAML.
 
 ### Minimal
 
@@ -89,8 +89,8 @@ title: Automations
 show_logo: true
 show_failed: true
 show_linked: true
-collapse_failed: true
-collapse_linked: true
+expand_failed: false
+expand_linked: false
 show_details: true
 show_controls: true
 max_items: 5
@@ -114,8 +114,8 @@ language: fr
 | `show_logo` | both | `true` | Show the Automation Monitor logo (opens the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor) in a new tab) |
 | `show_failed` | both | `true` | Failed automations (counter and list) |
 | `show_linked` | both | `true` | Unavailable linked entities (counter and list) |
-| `collapse_failed` | full | `true` | Fold the failed automations when there are several (one click unfolds them); `false` always shows them |
-| `collapse_linked` | full | `true` | Fold the unavailable linked entities when there are several (one click unfolds them); `false` always shows them |
+| `expand_failed` | full | `false` | Failed automations expanded when the card loads (click the section title to fold / unfold) |
+| `expand_linked` | full | `false` | Unavailable linked entities expanded when the card loads (click the section title to fold / unfold) |
 | `show_details` | full | `true` | Error message of each failed automation |
 | `show_controls` | full | `true` | Clear and Clear all buttons (the Trace and Edit links and the Refresh button are always shown) |
 | `max_items` | full | `5` | Items shown per list before the "Show more" button |

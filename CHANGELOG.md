@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+### ✨ Features
+
+- Same folding as the Dockhand card: Failed automations and Unavailable linked entities are folded by default, even with a single item; click the section title (with its chevron) to fold or unfold. The Show / Fold buttons are gone.
+- New `expand_failed` and `expand_linked` options (also in the visual editor) keep a list expanded. They replace `collapse_failed` / `collapse_linked`; `collapse_*: false` is still honoured.
+
 ## 1.3.0
 
 ### ✨ Features

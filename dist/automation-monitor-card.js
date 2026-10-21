@@ -7,7 +7,7 @@
  * translation_key), so the cards work whatever the Home Assistant language or entity ids.
  */
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 const IMG_LOGO = "data:image/png;base64,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";
 const INTEGRATION_SITE = "https://github.com/olli-dot-dev/ha-automation-monitor";
 const PLATFORM = "automation_monitor";
@@ -62,9 +62,6 @@ const STRINGS = {
     confirm_reset_all: "Clear all failed automations? They will be reported again on their next failure.",
     show_more: "Show {n} more",
     show_less: "Show less",
-    unfold_failed: "Show the {n} automations",
-    unfold_linked: "Show the {n} entities",
-    fold: "Fold",
     just_now: "just now",
     no_integration: "Automation Monitor not found. Is the Automation Monitor integration installed?",
     unavailable: "The Automation Monitor sensors are unavailable.",
@@ -74,8 +71,8 @@ const STRINGS = {
     show_logo: "Show Automation Monitor logo",
     show_failed: "Show failed automations",
     show_linked: "Show unavailable linked entities",
-    collapse_failed: "Fold the failed automations",
-    collapse_linked: "Fold the unavailable linked entities",
+    expand_failed: "Failed automations expanded by default",
+    expand_linked: "Unavailable linked entities expanded by default",
     show_controls: "Show clear buttons",
     show_details: "Show error details",
     max_items: "Items shown per list",
@@ -106,9 +103,6 @@ const STRINGS = {
     confirm_reset_all: "Effacer toutes les automatisations en échec ? Elles seront de nouveau signalées au prochain échec.",
     show_more: "Afficher {n} de plus",
     show_less: "Afficher moins",
-    unfold_failed: "Afficher les {n} automatisations",
-    unfold_linked: "Afficher les {n} entités",
-    fold: "Replier",
     just_now: "à l'instant",
     no_integration: "Automation Monitor introuvable. L'intégration Automation Monitor est-elle installée ?",
     unavailable: "Les capteurs d'Automation Monitor sont indisponibles.",
@@ -118,8 +112,8 @@ const STRINGS = {
     show_logo: "Afficher le logo Automation Monitor",
     show_failed: "Afficher les automatisations en échec",
     show_linked: "Afficher les entités liées indisponibles",
-    collapse_failed: "Replier les automatisations en échec",
-    collapse_linked: "Replier les entités liées indisponibles",
+    expand_failed: "Automatisations en échec dépliées par défaut",
+    expand_linked: "Entités liées indisponibles dépliées par défaut",
     show_controls: "Afficher les boutons Effacer",
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
@@ -290,6 +284,7 @@ class AutomationMonitorBase extends HTMLElement {
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
     this._config = { ...config };
+    this._folds = {};
     this._html = "";
     this._update();
   }
@@ -326,6 +321,10 @@ class AutomationMonitorBase extends HTMLElement {
     ev.stopPropagation();
     const { action, entity, label, path } = el.dataset;
     if (path) return navigate(path);
+    if (action === "fold") {
+      this._folds = { ...this._folds, [el.dataset.section]: !this._isOpen(el.dataset.section) };
+      return this._update();
+    }
     if (action === "expand") {
       this._expanded = { ...this._expanded, [entity]: !this._expanded[entity] };
       return this._update();
@@ -429,6 +428,10 @@ const FULL_STYLE = `
                           background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
   .section-title .spacer { flex: 1; }
   .section-title .btn { text-transform: none; letter-spacing: 0; }
+  .section-title.fold { cursor: pointer; user-select: none; }
+  .section-title .chevron { transition: transform .2s ease; }
+  .section-title.closed { margin-bottom: 0; }
+  .section-title.closed .chevron { transform: rotate(-90deg); }
   .items { display: flex; flex-direction: column; gap: 8px; }
   .item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 12px; min-width: 0;
           background: var(--secondary-background-color, rgba(127,127,127,.08)); border-left: 3px solid var(--c); }
@@ -454,8 +457,6 @@ const FULL_STYLE = `
   .item .btn { background: var(--card-background-color, rgba(127,127,127,.12)); }
   .used { font-size: 12px; color: var(--secondary-text-color); }
   .more { align-self: center; }
-  .fold { align-self: flex-start; }
-  .items + .items { margin-top: 8px; }
 `;
 
 class AutomationMonitorCard extends AutomationMonitorBase {
@@ -508,20 +509,20 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     return `<div class="items">${shown.map(renderItem).join("")}${more}</div>`;
   }
 
-  // When a list has several items it is folded by default (unless the option is false): one click unfolds it.
-  _foldable(key, items, option, label, renderItem) {
-    if (items.length < 2 || option === false) return this._list(key, items, renderItem);
-    const open = this._expanded[`${key}_open`];
-    const toggle = `<div class="items"><button class="btn fold" data-action="expand" data-entity="${key}_open">${svgIcon(
-      open ? ICONS.chevron_up : ICONS.chevron_down
-    )}<span>${esc(open ? this._t("fold") : this._t(label, { n: items.length }))}</span></button></div>`;
-    return open ? `${this._list(key, items, renderItem)}${toggle}` : toggle;
+  // Lists are collapsed until their title is clicked, unless expand_<key> is set
+  // (collapse_<key>: false, the former option, is still honoured).
+  _isOpen(key) {
+    return this._folds?.[key] ?? (this._config[`expand_${key}`] === true || this._config[`collapse_${key}`] === false);
   }
 
-  _sectionTitle(icon, label, n, cls, button) {
-    return `<div class="section-title">${svgIcon(icon)}<span>${esc(label)}</span>${
-      n ? `<span class="count ${cls}">${n}</span>` : ""
-    }<span class="spacer"></span>${button || ""}</div>`;
+  _section(key, icon, label, items, cls, renderItem, button) {
+    const open = this._isOpen(key);
+    return `<div>
+      <div class="section-title fold ${open ? "" : "closed"}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(label)}</span><span class="count ${cls}">${
+      items.length
+    }</span><span class="spacer"></span>${button || ""}${svgIcon(ICONS.chevron_down, "chevron")}</div>
+      ${open ? this._list(key, items, renderItem) : ""}
+    </div>`;
   }
 
   _failedSection(data) {
@@ -530,10 +531,9 @@ class AutomationMonitorCard extends AutomationMonitorBase {
       controls && data.failures.length
         ? `<button class="btn" data-action="reset_all" title="${esc(this._t("reset_all"))}">${svgIcon(ICONS.clear)}<span>${esc(this._t("reset_all"))}</span></button>`
         : "";
-    const title = this._sectionTitle(ICONS.robot_alert, this._t("failed_automations"), data.failures.length, "crit", button);
     // Nothing to list: the counter above already says so.
     if (!data.failures.length) return "";
-    return `<div>${title}${this._foldable("failed", data.failures, this._config.collapse_failed, "unfold_failed", (a) => this._failure(a, controls))}</div>`;
+    return this._section("failed", ICONS.robot_alert, this._t("failed_automations"), data.failures, "crit", (a) => this._failure(a, controls), button);
   }
 
   _failure(a, controls) {
@@ -568,9 +568,8 @@ class AutomationMonitorCard extends AutomationMonitorBase {
   }
 
   _linkedSection(data) {
-    const title = this._sectionTitle(ICONS.disconnect, this._t("linked_unavailable"), data.linked.length, "warn");
     if (!data.linked.length) return "";
-    return `<div>${title}${this._foldable("linked", data.linked, this._config.collapse_linked, "unfold_linked", (e) => this._linked(e))}</div>`;
+    return this._section("linked", ICONS.disconnect, this._t("linked_unavailable"), data.linked, "warn", (e) => this._linked(e));
   }
 
   _linked(e) {
@@ -749,7 +748,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
 
 class AutomationMonitorCardEditor extends AutomationMonitorEditorBase {
   static get toggles() {
-    return [...super.toggles, ["collapse_failed", true], ["collapse_linked", true], ["show_details", true], ["show_controls", true]];
+    return [...super.toggles, ["expand_failed", false], ["expand_linked", false], ["show_details", true], ["show_controls", true]];
   }
 
   static extraFields() {
