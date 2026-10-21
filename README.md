@@ -37,7 +37,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 
 ## Prerequisites
 
-The [Automation Monitor integration](https://github.com/olli-dot-dev/ha-automation-monitor) must be installed and configured (it is available in HACS as a custom repository), with Home Assistant 2024.1 or later.
+The [Automation Monitor integration](https://github.com/olli-dot-dev/ha-automation-monitor) must be installed and configured (it is available in HACS as a custom repository), with Home Assistant 2024.8 or later.
 
 ## Installation
 
