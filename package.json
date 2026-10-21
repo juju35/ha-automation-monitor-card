@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs --check && node --check dist/automation-monitor-card.js",
+    "check": "node scripts/build.mjs && node --check dist/automation-monitor-card.js",
     "screenshots": "node scripts/screenshots.mjs"
   },
   "license": "MIT",
