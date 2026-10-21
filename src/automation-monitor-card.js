@@ -222,7 +222,7 @@ const tracePath = (hass, entityId, uniqueId) => {
 // ---------------------------------------------------------------------------
 
 const BASE_STYLE = `
-  :host { --am-blue: #1db6ec; --am-navy: #0d4a68; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa000);
+  :host { --am-blue: #1db6ec; --am-navy: #0d4a68; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa600);
           --am-crit: var(--error-color, #db4437); --am-idle: var(--disabled-text-color, #9e9e9e); }
   ha-card { overflow: hidden; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
