@@ -94,6 +94,9 @@ expand_linked: false
 show_details: true
 show_controls: true
 max_items: 5
+exclude_devices:
+  - Garage door sensor
+  - 4f1c2e9d8b7a6c5d4e3f2a1b0c9d8e7f
 language: fr
 ```
 
@@ -119,6 +122,7 @@ language: fr
 | `show_details` | full | `true` | Error message of each failed automation |
 | `show_controls` | full | `true` | Clear and Clear all buttons (the Trace and Edit links and the Refresh button are always shown) |
 | `max_items` | full | `5` | Items shown per list before the "Show more" button |
+| `exclude_devices` | both | — | Devices to ignore: their unavailable linked entities (and failed automations attached to them) are left out of the lists, counters and status. Device ids (written by the visual editor) or device names |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |
 | `language` | both | Auto | Force language: `fr` or `en` (auto-detects from HA settings) |

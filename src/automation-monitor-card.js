@@ -76,6 +76,7 @@ const STRINGS = {
     show_controls: "Show clear buttons",
     show_details: "Show error details",
     max_items: "Items shown per list",
+    exclude_devices: "Ignored devices",
     language: "Language",
     lang_auto: "Automatic",
   },
@@ -117,6 +118,7 @@ const STRINGS = {
     show_controls: "Afficher les boutons Effacer",
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
+    exclude_devices: "Appareils ignorés",
     language: "Langue",
     lang_auto: "Automatique",
   },
@@ -194,6 +196,25 @@ const findSensors = (hass, config) => {
   const linked = config.linked_entity || found.linked;
   if (!failed && !linked) return { error: "no_integration" };
   return { failed, linked };
+};
+
+// Device of an item: the device_id given by the integration, else the entity registry.
+const deviceOf = (hass, item) => item.device_id || hass.entities?.[item.entity_id]?.device_id || null;
+
+/**
+ * Devices to ignore, from exclude_devices: device ids (as the visual editor writes them) or device
+ * names, so the YAML can stay readable. Returns a Set of device ids.
+ */
+const excludedDevices = (hass, config) => {
+  const wanted = [].concat(config.exclude_devices ?? []).map((v) => String(v).trim()).filter(Boolean);
+  if (!wanted.length) return null;
+  const ids = new Set(wanted);
+  const names = new Set(wanted.map((v) => v.toLowerCase()));
+  for (const d of Object.values(hass.devices || {})) {
+    const name = (d.name_by_user || d.name || "").toLowerCase();
+    if (name && names.has(name)) ids.add(d.id);
+  }
+  return ids;
 };
 
 // Editor page of an automation, script or scene, when it was created in the UI.
@@ -366,8 +387,11 @@ class AutomationMonitorBase extends HTMLElement {
     const f = this._s(found.failed);
     const l = this._s(found.linked);
     if (!valid(f) && !valid(l)) return { error: "unavailable" };
-    const failures = (valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : []).slice().sort(byDateDesc("last_error_time"));
-    const linked = (valid(l) && Array.isArray(l.attributes.entities) ? l.attributes.entities : []).slice().sort(byDateDesc("unavailable_since"));
+    // Items of an ignored device are left out everywhere: lists, counters and status.
+    const ignored = excludedDevices(this._hass, this._config);
+    const keep = (item) => !ignored || !ignored.has(deviceOf(this._hass, item));
+    const failures = (valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : []).filter(keep).sort(byDateDesc("last_error_time"));
+    const linked = (valid(l) && Array.isArray(l.attributes.entities) ? l.attributes.entities : []).filter(keep).sort(byDateDesc("unavailable_since"));
     return { failedId: found.failed, linkedId: found.linked, failures, linked };
   }
 
@@ -716,6 +740,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
     return [
       { name: "title", selector: { text: {} } },
       ...this.constructor.extraFields(tr),
+      { name: "exclude_devices", selector: { device: { multiple: true } } },
       { type: "grid", name: "", schema: this.constructor.toggles.map(([name]) => ({ name, selector: { boolean: {} } })) },
       {
         name: "language",
@@ -744,7 +769,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
         const config = { ...ev.detail.value };
         const defaults = { ...Object.fromEntries(toggles), max_items: DEFAULT_MAX_ITEMS };
         // Keep the YAML minimal: drop empty values and options left at their default.
-        for (const [k, v] of Object.entries(config)) if (v === "" || v === undefined || v === null || (k in defaults && v === defaults[k])) delete config[k];
+        for (const [k, v] of Object.entries(config)) if (v === "" || v === undefined || v === null || (Array.isArray(v) && !v.length) || (k in defaults && v === defaults[k])) delete config[k];
         this._config = config;
         this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
       });

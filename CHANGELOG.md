@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+### ✨ Features
+
+- New `exclude_devices` option (both cards, also in the visual editor with a device picker): the entities of these devices are ignored — left out of the lists, the counters and the status. Device ids or device names are accepted, so the YAML can stay readable.
+
 ## 1.6.0
 
 ### ✨ Features
