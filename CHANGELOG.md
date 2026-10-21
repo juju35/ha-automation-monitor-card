@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0
+
+### ✨ Features
+
+- A click anywhere else on the page folds the lists back to their defaults (`expand_failed`, `expand_linked`) and shortens the lists opened with "Show more" again, as in ha-carburants-france.
+
 ## 1.5.1
 
 ### Development

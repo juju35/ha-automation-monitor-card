@@ -292,10 +292,22 @@ class AutomationMonitorBase extends HTMLElement {
   // Relative times ("5 minutes ago") are refreshed every minute even without a state change.
   connectedCallback() {
     this._timer = setInterval(() => this._update(), 60000);
+    // A click elsewhere on the page folds the lists back to their defaults and shortens them again
+    // (as in ha-carburants-france). A click, not a pointerdown: folding on press would shift the
+    // layout under the pointer before the click.
+    this._onOutside ??= (ev) => {
+      if (!Object.keys(this._folds || {}).length && !Object.keys(this._expanded).length) return;
+      if (ev.composedPath().includes(this)) return;
+      this._folds = {};
+      this._expanded = {};
+      this._update();
+    };
+    document.addEventListener("click", this._onOutside, true);
   }
 
   disconnectedCallback() {
     clearInterval(this._timer);
+    document.removeEventListener("click", this._onOutside, true);
   }
 
   _t(key, vars) {
