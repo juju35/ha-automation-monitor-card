@@ -424,8 +424,7 @@ const FULL_STYLE = `
   .section-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; text-transform: uppercase;
                    letter-spacing: .04em; color: var(--secondary-text-color); margin-bottom: 8px; min-height: 26px; }
   .section-title .icon { width: 16px; height: 16px; }
-  .section-title .count { font-weight: 500; padding: 0 7px; border-radius: 10px; font-size: 11px; line-height: 18px;
-                          background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
+  .section-title .count { text-transform: none; letter-spacing: 0; font-weight: 400; }
   .section-title .spacer { flex: 1; }
   .section-title .btn { text-transform: none; letter-spacing: 0; }
   .section-title.fold { cursor: pointer; user-select: none; }
@@ -515,12 +514,14 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     return this._folds?.[key] ?? (this._config[`expand_${key}`] === true || this._config[`collapse_${key}`] === false);
   }
 
-  _section(key, icon, label, items, cls, renderItem, button) {
+  // Title: icon, label, actions, "shown/total" counter and chevron, as in the Dockhand card.
+  _section(key, icon, label, items, renderItem, button) {
     const open = this._isOpen(key);
+    const shown = this._expanded[key] ? items.length : Math.min(items.length, this._max());
     return `<div>
-      <div class="section-title fold ${open ? "" : "closed"}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(label)}</span><span class="count ${cls}">${
-      items.length
-    }</span><span class="spacer"></span>${button || ""}${svgIcon(ICONS.chevron_down, "chevron")}</div>
+      <div class="section-title fold ${open ? "" : "closed"}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(
+      label
+    )}</span><span class="spacer"></span>${button || ""}<span class="count">${shown}/${items.length}</span>${svgIcon(ICONS.chevron_down, "chevron")}</div>
       ${open ? this._list(key, items, renderItem) : ""}
     </div>`;
   }
@@ -533,7 +534,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         : "";
     // Nothing to list: the counter above already says so.
     if (!data.failures.length) return "";
-    return this._section("failed", ICONS.robot_alert, this._t("failed_automations"), data.failures, "crit", (a) => this._failure(a, controls), button);
+    return this._section("failed", ICONS.robot_alert, this._t("failed_automations"), data.failures, (a) => this._failure(a, controls), button);
   }
 
   _failure(a, controls) {
@@ -569,7 +570,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
 
   _linkedSection(data) {
     if (!data.linked.length) return "";
-    return this._section("linked", ICONS.disconnect, this._t("linked_unavailable"), data.linked, "warn", (e) => this._linked(e));
+    return this._section("linked", ICONS.disconnect, this._t("linked_unavailable"), data.linked, (e) => this._linked(e));
   }
 
   _linked(e) {

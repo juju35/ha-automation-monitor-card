@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+### 💄 Style
+
+- Section titles show a "shown/total" counter next to the chevron (e.g. `3/3`, or `5/8` when the list is cut by `max_items`), as in the Dockhand card, instead of the colored badge.
+
 ## 1.4.0
 
 ### ✨ Features
