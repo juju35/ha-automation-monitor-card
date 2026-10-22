@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.0
+
+### Changes
+- More compact layout with the same information, like the other ha-* cards: 12 px card padding, 36 px header icon, 16 px name and 12 px subtitle, 11 px pills, tighter tiles and sections.
+- Smaller counters (20 px figures, 30 px badges) and list items (8 × 10 px padding, 13 px titles, 11 px tags).
+- The mini card picks up the smaller pills and subtitle.
+
 ## 1.8.1
 
 ### Changes
