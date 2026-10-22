@@ -132,7 +132,7 @@ const esc = (v) =>
   String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const lang = (hass, config) => {
-  const l = (config && config.language) || (hass && (hass.locale?.language || hass.language)) || "en";
+  const l = (config?.language) || (hass && (hass.locale?.language || hass.language)) || "en";
   return STRINGS[l] ? l : STRINGS[l.split("-")[0]] ? l.split("-")[0] : "en";
 };
 
@@ -389,7 +389,7 @@ class AutomationMonitorBase extends HTMLElement {
     if (!valid(f) && !valid(l)) return { error: "unavailable" };
     // Items of an ignored device are left out everywhere: lists, counters and status.
     const ignored = excludedDevices(this._hass, this._config);
-    const keep = (item) => !ignored || !ignored.has(deviceOf(this._hass, item));
+    const keep = (item) => !ignored?.has(deviceOf(this._hass, item));
     const failures = (valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : []).filter(keep).sort(byDateDesc("last_error_time"));
     const linked = (valid(l) && Array.isArray(l.attributes.entities) ? l.attributes.entities : []).filter(keep).sort(byDateDesc("unavailable_since"));
     return { failedId: found.failed, linkedId: found.linked, failures, linked };
@@ -786,7 +786,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
 
 class AutomationMonitorCardEditor extends AutomationMonitorEditorBase {
   static get toggles() {
-    return [...super.toggles, ["expand_failed", false], ["expand_linked", false], ["show_details", true], ["show_controls", true]];
+    return [...AutomationMonitorEditorBase.toggles, ["expand_failed", false], ["expand_linked", false], ["show_details", true], ["show_controls", true]];
   }
 
   static extraFields() {
