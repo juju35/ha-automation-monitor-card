@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1
+
+### Changes
+- The status pill is back on the right of the header: moving it under the title in the previous version is undone.
+
 ## 1.8.0
 
 ### Changes
