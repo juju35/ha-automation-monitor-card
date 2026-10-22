@@ -250,11 +250,11 @@ const BASE_STYLE = `
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
   .ok { --c: var(--am-ok); } .warn { --c: var(--am-warn); } .crit { --c: var(--am-crit); } .idle { --c: var(--am-idle); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent); color: var(--c, var(--am-ok)); flex: none; }
-  .header { display: flex; align-items: center; gap: 12px; padding: 16px 16px 8px; }
-  .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; }
+  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
+  .logo { height: 36px; width: 36px; border-radius: 10px; flex: none; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
              flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }
@@ -263,22 +263,22 @@ const BASE_STYLE = `
   .refresh.spin .icon { color: var(--am-blue); animation: am-spin 1s linear infinite; }
   @keyframes am-spin { to { transform: rotate(360deg); } }
   .titles { flex: 1; min-width: 0; }
-  .name { font-size: 18px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .warning { padding: 16px; color: var(--am-warn); }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; font: inherit; font-size: 12px;
-         font-weight: 500; padding: 5px 10px; border-radius: 16px; background: var(--secondary-background-color, rgba(127,127,127,.12));
+         font-weight: 500; padding: 4px 8px; border-radius: 16px; background: var(--secondary-background-color, rgba(127,127,127,.12));
          color: var(--primary-text-color); min-width: 0; white-space: nowrap; }
   .btn:hover { background: color-mix(in srgb, var(--am-blue) 16%, var(--secondary-background-color, rgba(127,127,127,.12))); }
   .btn .icon { width: 16px; height: 16px; color: var(--am-blue); }
-  .counters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .counter { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; min-width: 0;
+  .counters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .counter { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; min-width: 0;
              background: var(--secondary-background-color, rgba(127,127,127,.08)); }
   .counter.crit, .counter.warn { background: color-mix(in srgb, var(--c) 12%, transparent); }
-  .counter .badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none;
+  .counter .badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none;
                     background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
-  .counter .badge .icon { width: 20px; height: 20px; }
-  .counter .n { font-size: 24px; font-weight: 500; line-height: 1.1; }
+  .counter .badge .icon { width: 18px; height: 18px; }
+  .counter .n { font-size: 20px; font-weight: 500; line-height: 1.1; }
   .counter.crit .n, .counter.warn .n { color: var(--c); }
   .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; }
   .counter > div:last-child { min-width: 0; }
@@ -456,9 +456,9 @@ class AutomationMonitorBase extends HTMLElement {
 // ---------------------------------------------------------------------------
 
 const FULL_STYLE = `
-  .content { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 16px; }
-  .section-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; text-transform: uppercase;
-                   letter-spacing: .04em; color: var(--secondary-text-color); margin-bottom: 8px; min-height: 26px; }
+  .content { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 12px; }
+  .section-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; text-transform: uppercase;
+                   letter-spacing: .04em; color: var(--secondary-text-color); margin-bottom: 6px; min-height: 24px; }
   .section-title .icon { width: 16px; height: 16px; }
   .section-title .count { text-transform: none; letter-spacing: 0; font-weight: 400; }
   .section-title .spacer { flex: 1; }
@@ -467,20 +467,20 @@ const FULL_STYLE = `
   .section-title .chevron { transition: transform .2s ease; }
   .section-title.closed { margin-bottom: 0; }
   .section-title.closed .chevron { transform: rotate(-90deg); }
-  .items { display: flex; flex-direction: column; gap: 8px; }
-  .item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 12px; min-width: 0;
+  .items { display: flex; flex-direction: column; gap: 6px; }
+  .item { display: flex; gap: 8px; padding: 8px 10px; border-radius: 12px; min-width: 0;
           background: var(--secondary-background-color, rgba(127,127,127,.08)); border-left: 3px solid var(--c); }
   .item > .icon { width: 20px; height: 20px; color: var(--c); margin-top: 1px; }
-  .item .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .item .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
   .item .top { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-  .item .title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .title { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item .when { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; flex: none; }
   .item .eid { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item .msg { font-family: var(--code-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace); font-size: 12px; line-height: 1.4;
-               padding: 6px 8px; border-radius: 8px; overflow-wrap: anywhere; color: var(--primary-text-color);
+               padding: 4px 8px; border-radius: 8px; overflow-wrap: anywhere; color: var(--primary-text-color);
                background: color-mix(in srgb, var(--c) 10%, transparent); }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 8px; max-width: 100%;
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 1px 6px; border-radius: 8px; max-width: 100%;
          background: var(--card-background-color, rgba(127,127,127,.12)); color: var(--primary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tag .icon { width: 14px; height: 14px; color: var(--secondary-text-color); }
   .tag.link { cursor: pointer; }
