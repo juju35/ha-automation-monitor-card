@@ -265,7 +265,6 @@ const BASE_STYLE = `
   .titles { flex: 1; min-width: 0; }
   .name { font-size: 18px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .titles .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .warning { padding: 16px; color: var(--am-warn); }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; font: inherit; font-size: 12px;
          font-weight: 500; padding: 5px 10px; border-radius: 16px; background: var(--secondary-background-color, rgba(127,127,127,.12));
@@ -426,8 +425,8 @@ class AutomationMonitorBase extends HTMLElement {
         <div class="titles">
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
-          <div class="chips"><span class="chip clickable ${status.cls}" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span></div>
         </div>
+        <span class="chip clickable ${status.cls}" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
         <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
       </div>`;
   }
