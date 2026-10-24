@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.1
+
+### Fixes
+- Keyboard focus stays on the row you were on when a new failure moves the list: pressing Enter on a Reset, trace or edit button now always acts on that automation, never on its neighbour.
+- The automation count in the subtitle is only computed when it is shown.
+
+### Maintenance
+- Browser tests (Chromium) for focus and in-place updates, run in CI.
+
 ## 1.10.0
 
 ### Changes
