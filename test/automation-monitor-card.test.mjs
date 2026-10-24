@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { AutomationMonitorCard, resolve, sameSig, esc } = load("automation-monitor-card.js", [
+const { AutomationMonitorCard, resolve, sameSig, esc, editorPath, excludedDevices } = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
   "resolve",
   "sameSig",
   "esc",
+  "editorPath",
+  "excludedDevices",
 ]);
 
 const entities = {
@@ -55,4 +57,48 @@ test("a change of a monitored sensor changes the render signature", () => {
 
 test("esc escapes HTML text and attribute characters", () => {
   assert.equal(esc(`<img src=x onerror="a('b')">&`), "&lt;img src=x onerror=&quot;a(&#39;b&#39;)&quot;&gt;&amp;");
+});
+
+test("the script editor link uses the script key (unique_id) when given", () => {
+  const hass = { states: {} };
+  assert.equal(editorPath(hass, "script.renamed", "ambiance_soiree"), "/config/script/edit/ambiance_soiree");
+  assert.equal(editorPath(hass, "script.ambiance", undefined), "/config/script/edit/ambiance");
+  assert.equal(editorPath(hass, "script.a", "x y"), "/config/script/edit/x%20y");
+});
+
+test("excluded devices are matched by id or name and cached on hass.devices", () => {
+  const devs = { d1: { id: "d1", name: "Hall sensor" }, d2: { id: "d2", name: "Plug", name_by_user: "Kitchen plug" } };
+  const hass = { devices: devs };
+  const ids = excludedDevices(hass, { exclude_devices: ["kitchen plug", "d9"] });
+  assert.deepEqual([...ids].sort(), ["d2", "d9", "kitchen plug"].sort());
+  assert.equal(excludedDevices(hass, { exclude_devices: ["kitchen plug", "d9"] }), ids);
+  // Another exclude_devices value, or a new device registry, is recomputed.
+  assert.ok(excludedDevices(hass, { exclude_devices: ["Hall sensor"] }).has("d1"));
+  assert.ok(!excludedDevices({ devices: { ...devs } }, { exclude_devices: ["kitchen plug"] }).has("d9"));
+  assert.equal(excludedDevices(hass, {}), null);
+});
+
+test("setConfig folds the lists shortened by Show more back", () => {
+  const el = new AutomationMonitorCard();
+  el._expanded = { failed: true };
+  el.setConfig({ max_items: 3 });
+  assert.deepEqual({ ...el._expanded }, {});
+});
+
+test("a failed Refresh call stops the spin and the timer is cleared on disconnect", async () => {
+  const el = card(baseStates());
+  el._update = () => {};
+  el._hass.callService = () => Promise.reject(new Error("unloaded"));
+  el._onClick({ composedPath: () => [{ dataset: { action: "rebuild" } }], stopPropagation() {} });
+  assert.equal(el._refreshing, true);
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(el._refreshing, false);
+  assert.equal(el._refreshTimer, null);
+
+  el._hass.callService = () => new Promise(() => {});
+  el._onClick({ composedPath: () => [{ dataset: { action: "rebuild" } }], stopPropagation() {} });
+  assert.ok(el._refreshTimer);
+  el.disconnectedCallback();
+  assert.equal(el._refreshTimer, null);
+  assert.equal(el._refreshing, false);
 });
