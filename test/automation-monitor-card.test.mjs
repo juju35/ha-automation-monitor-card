@@ -102,3 +102,25 @@ test("a failed Refresh call stops the spin and the timer is cleared on disconnec
   assert.equal(el._refreshTimer, null);
   assert.equal(el._refreshing, false);
 });
+
+test("the automations are only counted while the subtitle shows their number", () => {
+  const states = baseStates();
+  let walks = 0;
+  const counting = (st) =>
+    new Proxy(st, {
+      ownKeys: (t) => {
+        walks++;
+        return Reflect.ownKeys(t);
+      },
+    });
+  // A recent failure is in the subtitle: no count.
+  const el = card(counting(states));
+  el._signature();
+  assert.equal(walks, 0);
+  // No failure: the subtitle shows "N automations", which follows the number of automations.
+  const clear = { ...states, "sensor.failed": { ...states["sensor.failed"], state: "0", attributes: { automations: [] } } };
+  const before = card(clear)._signature();
+  const more = { ...clear, "automation.b": { entity_id: "automation.b", state: "on", attributes: {} } };
+  assert.ok(!sameSig(before, card(more)._signature()));
+  assert.match(card(more)._render(), /2 automations/);
+});
