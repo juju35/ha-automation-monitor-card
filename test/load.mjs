@@ -22,6 +22,10 @@ export const load = (file, names) => {
     CustomEvent: class {},
     Intl,
     Date,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
   };
   vm.createContext(context);
   return vm.runInContext(`${src}\n;({ ${names.join(", ")} })`, context);

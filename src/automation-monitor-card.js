@@ -46,7 +46,7 @@ const STRINGS = {
     all_ok: "All good",
     one_problem: "1 problem",
     n_problems: "{n} problems",
-    monitored: "{n} automations monitored",
+    automations: "{n} automations",
     last_failure: "Last failure {when}",
     step: "Step",
     streak: "{n} failures in a row",
@@ -88,7 +88,7 @@ const STRINGS = {
     all_ok: "Tout va bien",
     one_problem: "1 problème",
     n_problems: "{n} problèmes",
-    monitored: "{n} automatisations surveillées",
+    automations: "{n} automatisations",
     last_failure: "Dernier échec {when}",
     step: "Étape",
     streak: "{n} échecs consécutifs",
@@ -240,11 +240,24 @@ const findSensors = (hass, config) => {
 // Device of an item: the device_id given by the integration, else the entity registry.
 const deviceOf = (hass, item) => item.device_id || hass.entities?.[item.entity_id]?.device_id || null;
 
+const _excluded = new WeakMap();
+
 /**
  * Devices to ignore, from exclude_devices: device ids (as the visual editor writes them) or device
  * names, so the YAML can stay readable. Returns a Set of device ids.
  */
 const excludedDevices = (hass, config) => {
+  // Cached on the hass.devices object (replaced only when the device registry changes) and the
+  // exclude_devices value, instead of scanning every device on each update.
+  const key = JSON.stringify(config.exclude_devices ?? null);
+  const cached = hass.devices && _excluded.get(hass.devices);
+  if (cached?.key === key) return cached.ids;
+  const ids = computeExcluded(hass, config);
+  if (hass.devices) _excluded.set(hass.devices, { key, ids });
+  return ids;
+};
+
+const computeExcluded = (hass, config) => {
   const wanted = [].concat(config.exclude_devices ?? []).map((v) => String(v).trim()).filter(Boolean);
   if (!wanted.length) return null;
   const ids = new Set(wanted);
@@ -264,12 +277,29 @@ const editorPath = (hass, entityId, uniqueId) => {
     const id = s?.attributes?.id ?? uniqueId;
     return id ? `/config/automation/edit/${encodeURIComponent(id)}` : null;
   }
-  if (domain === "script") return objectId ? `/config/script/edit/${encodeURIComponent(objectId)}` : null;
+  // The script editor is keyed by the script key (its unique_id), which differs from the object_id
+  // once the entity_id has been renamed.
+  if (domain === "script") {
+    const key = uniqueId ?? objectId;
+    return key ? `/config/script/edit/${encodeURIComponent(key)}` : null;
+  }
   if (domain === "scene") {
     const id = s?.attributes?.id ?? uniqueId;
     return id ? `/config/scene/edit/${encodeURIComponent(id)}` : null;
   }
   return null;
+};
+
+// Number of automation entities, computed once per hass.states object (the signature and the
+// subtitle both need it).
+const _automationCount = new WeakMap();
+const automationCount = (hass) => {
+  let n = _automationCount.get(hass.states);
+  if (n === undefined) {
+    n = Object.keys(hass.states).filter((id) => id.startsWith("automation.")).length;
+    _automationCount.set(hass.states, n);
+  }
+  return n;
 };
 
 const tracePath = (hass, entityId, uniqueId) => {
@@ -357,6 +387,7 @@ class AutomationMonitorBase extends HTMLElement {
     if (!config) throw new Error("Invalid configuration");
     this._config = { ...config };
     this._folds = {};
+    this._expanded = {};
     this._html = "";
     this._update();
   }
@@ -380,6 +411,7 @@ class AutomationMonitorBase extends HTMLElement {
 
   disconnectedCallback() {
     clearInterval(this._timer);
+    this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);
   }
 
@@ -407,7 +439,7 @@ class AutomationMonitorBase extends HTMLElement {
         for (const src of [...list(item.referenced_by_details), ...list(item.referenced_by)]) sig.push(h.states[src?.entity_id ?? src]);
       }
     }
-    sig.push(Object.keys(h.states).filter((id) => id.startsWith("automation.")).length);
+    sig.push(automationCount(h));
     return sig;
   }
 
@@ -425,7 +457,22 @@ class AutomationMonitorBase extends HTMLElement {
   _call(domain, service, data) {
     return Promise.resolve()
       .then(() => this._hass.callService(domain, service, data))
-      .catch((err) => console.error(`automation-monitor-card: ${domain}.${service} failed`, err));
+      .then(
+        () => true,
+        (err) => {
+          console.error(`automation-monitor-card: ${domain}.${service} failed`, err);
+          return false;
+        }
+      );
+  }
+
+  // End of the Refresh button spin (also on a failed call, or when the card is removed).
+  _stopRefresh() {
+    clearTimeout(this._refreshTimer);
+    this._refreshTimer = null;
+    if (!this._refreshing) return;
+    this._refreshing = false;
+    this._update();
   }
 
   _onClick(ev) {
@@ -447,14 +494,12 @@ class AutomationMonitorBase extends HTMLElement {
     } else if (action === "reset_all") {
       if (window.confirm(this._t("confirm_reset_all"))) this._call(PLATFORM, "reset", {});
     } else if (action === "rebuild") {
-      this._call(PLATFORM, "rebuild_linked_entities", {});
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
       this._update();
-      setTimeout(() => {
-        this._refreshing = false;
-        this._update();
-      }, 1200);
+      clearTimeout(this._refreshTimer);
+      this._refreshTimer = setTimeout(() => this._stopRefresh(), 1200);
+      this._call(PLATFORM, "rebuild_linked_entities", {}).then((ok) => ok || this._stopRefresh());
     } else if (entity) {
       this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: entity }, bubbles: true, composed: true }));
     }
@@ -488,8 +533,10 @@ class AutomationMonitorBase extends HTMLElement {
     const last = data.failures[0];
     const when = last && ago(this._hass, this._config, last.last_error_time);
     if (when && this._config.show_failed !== false) return this._t("last_failure", { when });
-    const n = Object.keys(this._hass.states).filter((id) => id.startsWith("automation.")).length;
-    return n ? this._t("monitored", { n }) : "";
+    // All automations of Home Assistant: the integration does not expose how many it monitors
+    // (its exclusions are not visible to the card), so the label does not claim they are monitored.
+    const n = automationCount(this._hass);
+    return n ? this._t("automations", { n }) : "";
   }
 
   _header(data, sub) {
