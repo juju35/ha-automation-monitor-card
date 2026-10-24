@@ -65,7 +65,7 @@ const STRINGS = {
     just_now: "just now",
     no_integration: "Automation Monitor not found. Is the Automation Monitor integration installed?",
     unavailable: "The Automation Monitor sensors are unavailable.",
-    no_registry: "This card needs Home Assistant 2023.4 or later.",
+    no_registry: "This card needs Home Assistant 2024.8 or later.",
     // Editor
     title: "Title (optional)",
     show_logo: "Show Automation Monitor logo",
@@ -107,7 +107,7 @@ const STRINGS = {
     just_now: "à l'instant",
     no_integration: "Automation Monitor introuvable. L'intégration Automation Monitor est-elle installée ?",
     unavailable: "Les capteurs d'Automation Monitor sont indisponibles.",
-    no_registry: "Cette carte nécessite Home Assistant 2023.4 ou plus récent.",
+    no_registry: "Cette carte nécessite Home Assistant 2024.8 ou plus récent.",
     // Editor
     title: "Titre (optionnel)",
     show_logo: "Afficher le logo Automation Monitor",
@@ -162,6 +162,36 @@ const byDateDesc = (key) => (a, b) => (Date.parse(b[key]) || 0) - (Date.parse(a[
 
 const svgIcon = (path, cls = "") => `<svg class="icon ${cls}" viewBox="0 0 24 24"><path d="${path}"/></svg>`;
 
+// Same values, compared by identity: used to skip a render when nothing the card shows has changed.
+const sameSig = (a, b) => !!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]);
+
+// Patch the shadow DOM in place from the new HTML: nodes whose tag is unchanged are kept, so keyboard
+// focus, hover, text selection and CSS transitions survive an update, and only the changed text and
+// attributes are written.
+const patchAttrs = (cur, next) => {
+  for (const { name } of [...cur.attributes]) if (!next.hasAttribute(name)) cur.removeAttribute(name);
+  for (const { name, value } of next.attributes) if (cur.getAttribute(name) !== value) cur.setAttribute(name, value);
+};
+const patchChildren = (cur, next) => {
+  const old = [...cur.childNodes];
+  const fresh = [...next.childNodes];
+  fresh.forEach((n, i) => {
+    const o = old[i];
+    if (!o) cur.appendChild(n);
+    else if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) cur.replaceChild(n, o);
+    else if (n.nodeType === 1) {
+      patchAttrs(o, n);
+      patchChildren(o, n);
+    } else if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue;
+  });
+  for (let i = fresh.length; i < old.length; i++) cur.removeChild(old[i]);
+};
+const morph = (root, html) => {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html;
+  patchChildren(root, tpl.content);
+};
+
 // Open a Home Assistant page (automation editor, trace…) without reloading the frontend.
 const navigate = (path) => {
   window.history.pushState(null, "", path);
@@ -178,13 +208,22 @@ const KEYS = { failed: "failed_automations", linked: "linked_entities_unavailabl
  * Find the two sensors of the integration: { failed, linked } entity ids. The entity registry is used
  * first (platform + translation_key); the default entity ids are a fallback.
  */
+const _resolved = new WeakMap();
+
 const resolve = (hass) => {
   if (!hass.entities) return null;
-  const found = {};
-  for (const e of Object.values(hass.entities)) {
-    if (e.platform !== PLATFORM) continue;
-    for (const [k, key] of Object.entries(KEYS)) if (e.translation_key === key && !found[k]) found[k] = e.entity_id;
+  // The registry scan is cached on the hass.entities object, which Home Assistant replaces only
+  // when the registry changes (not on every state change).
+  let registry = _resolved.get(hass.entities);
+  if (!registry) {
+    registry = {};
+    for (const e of Object.values(hass.entities)) {
+      if (e.platform !== PLATFORM) continue;
+      for (const [k, key] of Object.entries(KEYS)) if (e.translation_key === key && !registry[k]) registry[k] = e.entity_id;
+    }
+    _resolved.set(hass.entities, registry);
   }
+  const found = { ...registry };
   for (const [k, key] of Object.entries(KEYS)) if (!found[k] && hass.states[`sensor.${key}`]) found[k] = `sensor.${key}`;
   return found;
 };
@@ -249,6 +288,7 @@ const BASE_STYLE = `
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
+  [role="button"]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
   .ok { --c: var(--am-ok); } .warn { --c: var(--am-warn); } .crit { --c: var(--am-crit); } .idle { --c: var(--am-idle); }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
@@ -291,11 +331,22 @@ class AutomationMonitorBase extends HTMLElement {
     this._html = "";
     this._expanded = {};
     this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
+    // Keyboard access: Enter or Space on a focusable non-button element acts as a click.
+    this.shadowRoot.addEventListener("keydown", (ev) => {
+      if ((ev.key === "Enter" || ev.key === " ") && ev.target.getAttribute?.("role") === "button") {
+        ev.preventDefault();
+        ev.target.click();
+      }
+    });
   }
 
   set hass(hass) {
     this._hass = hass;
-    this._update();
+    if (!this._config) return;
+    // Render only when a state the card shows has changed, not on every state change of Home Assistant.
+    const sig = this._signature();
+    if (sameSig(sig, this._sig)) return;
+    this._update(sig);
   }
 
   get hass() {
@@ -310,7 +361,8 @@ class AutomationMonitorBase extends HTMLElement {
     this._update();
   }
 
-  // Relative times ("5 minutes ago") are refreshed every minute even without a state change.
+  // Relative times ("5 minutes ago") are refreshed every minute even without a state change: the render
+  // is patched in place, so only their text changes.
   connectedCallback() {
     this._timer = setInterval(() => this._update(), 60000);
     // A click elsewhere on the page folds the lists back to their defaults and shortens them again
@@ -339,13 +391,41 @@ class AutomationMonitorBase extends HTMLElement {
     return id ? this._hass.states[id] : undefined;
   }
 
-  _update() {
+  // What the render depends on: registries, language, the two sensors, the automations, scripts and
+  // scenes they list (names, editor ids) and the number of automations shown in the subtitle.
+  _signature() {
+    const h = this._hass;
+    const sig = [h.entities, h.devices, h.language, h.locale?.language];
+    const found = findSensors(h, this._config);
+    if (found.error) return sig;
+    const list = (v) => (Array.isArray(v) ? v : []);
+    for (const id of [found.failed, found.linked]) {
+      const s = this._s(id);
+      sig.push(s);
+      for (const item of [...list(s?.attributes?.automations), ...list(s?.attributes?.entities)]) {
+        sig.push(h.states[item.entity_id]);
+        for (const src of [...list(item.referenced_by_details), ...list(item.referenced_by)]) sig.push(h.states[src?.entity_id ?? src]);
+      }
+    }
+    sig.push(Object.keys(h.states).filter((id) => id.startsWith("automation.")).length);
+    return sig;
+  }
+
+  _update(sig) {
     if (!this._hass || !this._config) return;
+    this._sig = sig ?? this._signature();
     const html = this._render();
     if (html !== this._html) {
       this._html = html;
-      this.shadowRoot.innerHTML = html;
+      morph(this.shadowRoot, html);
     }
+  }
+
+  // Service call whose failure is logged (Home Assistant already shows a toast) instead of left unhandled.
+  _call(domain, service, data) {
+    return Promise.resolve()
+      .then(() => this._hass.callService(domain, service, data))
+      .catch((err) => console.error(`automation-monitor-card: ${domain}.${service} failed`, err));
   }
 
   _onClick(ev) {
@@ -363,11 +443,11 @@ class AutomationMonitorBase extends HTMLElement {
       return this._update();
     }
     if (action === "reset") {
-      if (window.confirm(this._t("confirm_reset", { name: label }))) this._hass.callService(PLATFORM, "reset", { entity_id: entity });
+      if (window.confirm(this._t("confirm_reset", { name: label }))) this._call(PLATFORM, "reset", { entity_id: entity });
     } else if (action === "reset_all") {
-      if (window.confirm(this._t("confirm_reset_all"))) this._hass.callService(PLATFORM, "reset", {});
+      if (window.confirm(this._t("confirm_reset_all"))) this._call(PLATFORM, "reset", {});
     } else if (action === "rebuild") {
-      this._hass.callService(PLATFORM, "rebuild_linked_entities", {});
+      this._call(PLATFORM, "rebuild_linked_entities", {});
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
       this._update();
@@ -426,7 +506,7 @@ class AutomationMonitorBase extends HTMLElement {
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
         </div>
-        <span class="chip clickable ${status.cls}" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
+        <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
         <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
       </div>`;
   }
@@ -434,7 +514,7 @@ class AutomationMonitorBase extends HTMLElement {
   _counters(data) {
     const c = this._config;
     const counter = (id, icon, n, label, cls) =>
-      `<div class="counter clickable ${n ? cls : "ok"}" data-entity="${id || ""}">
+      `<div class="counter clickable ${n ? cls : "ok"}" role="button" tabindex="0" data-entity="${id || ""}">
         <div class="badge">${svgIcon(n ? icon : ICONS.check)}</div>
         <div><div class="n">${n}</div><div class="lbl">${esc(label)}</div></div>
       </div>`;
@@ -555,7 +635,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     const open = this._isOpen(key);
     const shown = this._expanded[key] ? items.length : Math.min(items.length, this._max());
     return `<div>
-      <div class="section-title fold ${open ? "" : "closed"}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(
+      <div class="section-title fold ${open ? "" : "closed"}" role="button" tabindex="0" aria-expanded="${open}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(
       label
     )}</span><span class="spacer"></span>${button || ""}<span class="count">${shown}/${items.length}</span>${svgIcon(ICONS.chevron_down, "chevron")}</div>
       ${open ? this._list(key, items, renderItem) : ""}
@@ -594,7 +674,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
         ${svgIcon(ICONS.robot_alert)}
         <div class="body">
           <div class="top">
-            <span class="title clickable" data-entity="${esc(a.entity_id)}">${esc(name)}</span>
+            <span class="title clickable" role="button" tabindex="0" data-entity="${esc(a.entity_id)}">${esc(name)}</span>
             ${when ? `<span class="when" title="${esc(fullDate(h, this._config, a.last_error_time))}">${esc(when)}</span>` : ""}
           </div>
           ${this._config.show_details !== false && a.error_message ? `<div class="msg">${esc(a.error_message)}</div>` : ""}
@@ -618,14 +698,14 @@ class AutomationMonitorCard extends AutomationMonitorBase {
       const name = src.name || h.states[src.entity_id]?.attributes?.friendly_name || src.entity_id;
       const path = editorPath(h, src.entity_id, src.unique_id);
       const icon = ICONS[domain] || ICONS.automation;
-      return `<span class="tag link" ${path ? `data-path="${esc(path)}"` : `data-entity="${esc(src.entity_id)}"`} title="${esc(src.entity_id)}">${svgIcon(icon)}${esc(name)}</span>`;
+      return `<span class="tag link" role="button" tabindex="0" ${path ? `data-path="${esc(path)}"` : `data-entity="${esc(src.entity_id)}"`} title="${esc(src.entity_id)}">${svgIcon(icon)}${esc(name)}</span>`;
     });
     return `
       <div class="item warn">
         ${svgIcon(ICONS.disconnect)}
         <div class="body">
           <div class="top">
-            <span class="title clickable" data-entity="${esc(e.entity_id)}">${esc(e.name || e.entity_id)}</span>
+            <span class="title clickable" role="button" tabindex="0" data-entity="${esc(e.entity_id)}">${esc(e.name || e.entity_id)}</span>
             ${when ? `<span class="when" title="${esc(fullDate(h, this._config, e.unavailable_since))}">${esc(this._t("unavailable_since", { when }))}</span>` : ""}
           </div>
           <div class="eid">${esc(e.entity_id)}</div>
@@ -685,7 +765,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorBase {
     if (last) {
       const when = ago(this._hass, c, last.last_error_time);
       lines.push(
-        `<div class="line crit clickable" data-entity="${esc(last.entity_id)}">${svgIcon(ICONS.alert)}<span><b>${esc(last.name || last.entity_id)}</b>${
+        `<div class="line crit clickable" role="button" tabindex="0" data-entity="${esc(last.entity_id)}">${svgIcon(ICONS.alert)}<span><b>${esc(last.name || last.entity_id)}</b>${
           when ? ` · ${esc(when)}` : ""
         }</span></div>`
       );
@@ -694,7 +774,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorBase {
     if (off) {
       const when = ago(this._hass, c, off.unavailable_since);
       lines.push(
-        `<div class="line warn clickable" data-entity="${esc(off.entity_id)}">${svgIcon(ICONS.disconnect)}<span><b>${esc(off.name || off.entity_id)}</b>${
+        `<div class="line warn clickable" role="button" tabindex="0" data-entity="${esc(off.entity_id)}">${svgIcon(ICONS.disconnect)}<span><b>${esc(off.name || off.entity_id)}</b>${
           when ? ` · ${esc(this._t("unavailable_since", { when }))}` : ""
         }</span></div>`
       );
