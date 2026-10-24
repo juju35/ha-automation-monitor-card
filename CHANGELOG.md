@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.10.1
+
+### Fixes
+- Keyboard focus stays on the row you were on when a new failure moves the list: pressing Enter on a Reset, trace or edit button now always acts on that automation, never on its neighbour.
+- The automation count in the subtitle is only computed when it is shown.
+
+### Maintenance
+- Browser tests (Chromium) for focus and in-place updates, run in CI.
+
+## 1.10.0
+
+### Changes
+- The subtitle reads "N automations" instead of "N automations monitored" ("N automatisations" in French): the card cannot see the exclusions set in the integration, so it no longer claims they are all monitored.
+- The card only re-renders when something it shows changes, and updates the page in place: keyboard focus, hover and text selection survive updates, and the bars, rings and chevrons animate again. Relative times ("5 minutes ago") still tick every minute.
+- Keyboard access: clickable items can be reached with Tab and opened with Enter or Space, with a visible focus outline; fold titles announce whether they are open.
+- The script editor link still opens the right script after its entity_id was renamed.
+- The Refresh button stops spinning as soon as the rebuild fails, and failed actions are logged instead of raising unhandled errors.
+- Changing `max_items` in the editor no longer leaves a "Show more" list expanded; the error message gives the right minimum Home Assistant version (2024.8).
+
+### Maintenance
+- CI hardened: actions pinned by commit SHA, read-only token permissions, Dependabot for action updates, duplication report annotated on pull requests.
+- Unit tests (`npm test`, run in CI); lighter updates (registry lookups and `exclude_devices` cached).
+
 ## 1.9.1
 
 ### Maintenance

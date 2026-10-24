@@ -46,7 +46,7 @@ const STRINGS = {
     all_ok: "All good",
     one_problem: "1 problem",
     n_problems: "{n} problems",
-    monitored: "{n} automations monitored",
+    automations: "{n} automations",
     last_failure: "Last failure {when}",
     step: "Step",
     streak: "{n} failures in a row",
@@ -88,7 +88,7 @@ const STRINGS = {
     all_ok: "Tout va bien",
     one_problem: "1 problème",
     n_problems: "{n} problèmes",
-    monitored: "{n} automatisations surveillées",
+    automations: "{n} automatisations",
     last_failure: "Dernier échec {when}",
     step: "Étape",
     streak: "{n} échecs consécutifs",
@@ -166,25 +166,54 @@ const svgIcon = (path, cls = "") => `<svg class="icon ${cls}" viewBox="0 0 24 24
 const sameSig = (a, b) => !!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]);
 
 // Patch the shadow DOM in place from the new HTML: nodes whose tag is unchanged are kept, so keyboard
-// focus, hover, text selection and CSS transitions survive an update, and only the changed text and
-// attributes are written.
+// focus, hover, embedded pictures and CSS transitions survive an update, and only the changed text and
+// attributes are written. Rows of a list carry a data-key (their entity or row id) and are matched by it,
+// wherever they moved, so a focused row keeps its own data when the list is reordered (a node matched by
+// position would be rewritten with the row taking its place, and Enter would act on that row). Nodes
+// without a data-key are matched by position.
 const patchAttrs = (cur, next) => {
   for (const { name } of [...cur.attributes]) if (!next.hasAttribute(name)) cur.removeAttribute(name);
   for (const { name, value } of next.attributes) if (cur.getAttribute(name) !== value) cur.setAttribute(name, value);
 };
+const keyOf = (n) => (n.nodeType === 1 ? n.getAttribute("data-key") : null);
+const sameNode = (a, b) => !!a && a.nodeType === b.nodeType && a.nodeName === b.nodeName;
+// Moves a kept node. moveBefore (where supported) keeps its focus; insertBefore drops it, which is safe:
+// Enter then does nothing rather than act on another row.
+const place = (parent, node, ref) => {
+  if (node === ref) return;
+  try {
+    if (parent.moveBefore && node.parentNode === parent) return parent.moveBefore(node, ref);
+  } catch (_e) {
+    /* fall back to insertBefore */
+  }
+  parent.insertBefore(node, ref);
+};
 const patchChildren = (cur, next) => {
   const old = [...cur.childNodes];
   const fresh = [...next.childNodes];
+  const byKey = new Map();
+  for (const o of old) {
+    const k = keyOf(o);
+    if (k !== null && !byKey.has(k)) byKey.set(k, o);
+  }
+  const used = new Set();
   fresh.forEach((n, i) => {
-    const o = old[i];
-    if (!o) cur.appendChild(n);
-    else if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) cur.replaceChild(n, o);
-    else if (n.nodeType === 1) {
+    const k = keyOf(n);
+    let o = k !== null ? byKey.get(k) : old[i];
+    if (!sameNode(o, n) || used.has(o) || (k === null && keyOf(o) !== null)) o = null;
+    const ref = cur.childNodes[i] ?? null;
+    if (!o) {
+      cur.insertBefore(n, ref);
+      return;
+    }
+    used.add(o);
+    place(cur, o, ref);
+    if (n.nodeType === 1) {
       patchAttrs(o, n);
       patchChildren(o, n);
     } else if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue;
   });
-  for (let i = fresh.length; i < old.length; i++) cur.removeChild(old[i]);
+  while (cur.childNodes.length > fresh.length) cur.removeChild(cur.lastChild);
 };
 const morph = (root, html) => {
   const tpl = document.createElement("template");
@@ -240,11 +269,24 @@ const findSensors = (hass, config) => {
 // Device of an item: the device_id given by the integration, else the entity registry.
 const deviceOf = (hass, item) => item.device_id || hass.entities?.[item.entity_id]?.device_id || null;
 
+const _excluded = new WeakMap();
+
 /**
  * Devices to ignore, from exclude_devices: device ids (as the visual editor writes them) or device
  * names, so the YAML can stay readable. Returns a Set of device ids.
  */
 const excludedDevices = (hass, config) => {
+  // Cached on the hass.devices object (replaced only when the device registry changes) and the
+  // exclude_devices value, instead of scanning every device on each update.
+  const key = JSON.stringify(config.exclude_devices ?? null);
+  const cached = hass.devices && _excluded.get(hass.devices);
+  if (cached?.key === key) return cached.ids;
+  const ids = computeExcluded(hass, config);
+  if (hass.devices) _excluded.set(hass.devices, { key, ids });
+  return ids;
+};
+
+const computeExcluded = (hass, config) => {
   const wanted = [].concat(config.exclude_devices ?? []).map((v) => String(v).trim()).filter(Boolean);
   if (!wanted.length) return null;
   const ids = new Set(wanted);
@@ -264,12 +306,29 @@ const editorPath = (hass, entityId, uniqueId) => {
     const id = s?.attributes?.id ?? uniqueId;
     return id ? `/config/automation/edit/${encodeURIComponent(id)}` : null;
   }
-  if (domain === "script") return objectId ? `/config/script/edit/${encodeURIComponent(objectId)}` : null;
+  // The script editor is keyed by the script key (its unique_id), which differs from the object_id
+  // once the entity_id has been renamed.
+  if (domain === "script") {
+    const key = uniqueId ?? objectId;
+    return key ? `/config/script/edit/${encodeURIComponent(key)}` : null;
+  }
   if (domain === "scene") {
     const id = s?.attributes?.id ?? uniqueId;
     return id ? `/config/scene/edit/${encodeURIComponent(id)}` : null;
   }
   return null;
+};
+
+// Number of automation entities, computed once per hass.states object (the signature and the
+// subtitle both need it).
+const _automationCount = new WeakMap();
+const automationCount = (hass) => {
+  let n = _automationCount.get(hass.states);
+  if (n === undefined) {
+    n = Object.keys(hass.states).filter((id) => id.startsWith("automation.")).length;
+    _automationCount.set(hass.states, n);
+  }
+  return n;
 };
 
 const tracePath = (hass, entityId, uniqueId) => {
@@ -357,6 +416,7 @@ class AutomationMonitorBase extends HTMLElement {
     if (!config) throw new Error("Invalid configuration");
     this._config = { ...config };
     this._folds = {};
+    this._expanded = {};
     this._html = "";
     this._update();
   }
@@ -380,6 +440,7 @@ class AutomationMonitorBase extends HTMLElement {
 
   disconnectedCallback() {
     clearInterval(this._timer);
+    this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);
   }
 
@@ -392,7 +453,8 @@ class AutomationMonitorBase extends HTMLElement {
   }
 
   // What the render depends on: registries, language, the two sensors, the automations, scripts and
-  // scenes they list (names, editor ids) and the number of automations shown in the subtitle.
+  // scenes they list (names, editor ids) and, only while the subtitle shows it, the number of automations
+  // (counting them walks every state, and hass.states is replaced on each state change).
   _signature() {
     const h = this._hass;
     const sig = [h.entities, h.devices, h.language, h.locale?.language];
@@ -407,7 +469,10 @@ class AutomationMonitorBase extends HTMLElement {
         for (const src of [...list(item.referenced_by_details), ...list(item.referenced_by)]) sig.push(h.states[src?.entity_id ?? src]);
       }
     }
-    sig.push(Object.keys(h.states).filter((id) => id.startsWith("automation.")).length);
+    if (!this._compact) {
+      const data = this._data();
+      if (!data.error && !this._lastFailure(data)) sig.push(automationCount(h));
+    }
     return sig;
   }
 
@@ -425,7 +490,22 @@ class AutomationMonitorBase extends HTMLElement {
   _call(domain, service, data) {
     return Promise.resolve()
       .then(() => this._hass.callService(domain, service, data))
-      .catch((err) => console.error(`automation-monitor-card: ${domain}.${service} failed`, err));
+      .then(
+        () => true,
+        (err) => {
+          console.error(`automation-monitor-card: ${domain}.${service} failed`, err);
+          return false;
+        }
+      );
+  }
+
+  // End of the Refresh button spin (also on a failed call, or when the card is removed).
+  _stopRefresh() {
+    clearTimeout(this._refreshTimer);
+    this._refreshTimer = null;
+    if (!this._refreshing) return;
+    this._refreshing = false;
+    this._update();
   }
 
   _onClick(ev) {
@@ -447,14 +527,12 @@ class AutomationMonitorBase extends HTMLElement {
     } else if (action === "reset_all") {
       if (window.confirm(this._t("confirm_reset_all"))) this._call(PLATFORM, "reset", {});
     } else if (action === "rebuild") {
-      this._call(PLATFORM, "rebuild_linked_entities", {});
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
       this._update();
-      setTimeout(() => {
-        this._refreshing = false;
-        this._update();
-      }, 1200);
+      clearTimeout(this._refreshTimer);
+      this._refreshTimer = setTimeout(() => this._stopRefresh(), 1200);
+      this._call(PLATFORM, "rebuild_linked_entities", {}).then((ok) => ok || this._stopRefresh());
     } else if (entity) {
       this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: entity }, bubbles: true, composed: true }));
     }
@@ -484,12 +562,19 @@ class AutomationMonitorBase extends HTMLElement {
     return { cls: nf ? "crit" : "warn", text: n === 1 ? this._t("one_problem") : this._t("n_problems", { n }), entity: nf ? data.failedId : data.linkedId };
   }
 
+  // Relative time of the most recent failure shown in the subtitle, or "".
+  _lastFailure(data) {
+    const last = this._config.show_failed !== false && data.failures[0];
+    return (last && ago(this._hass, this._config, last.last_error_time)) || "";
+  }
+
   _sub(data) {
-    const last = data.failures[0];
-    const when = last && ago(this._hass, this._config, last.last_error_time);
-    if (when && this._config.show_failed !== false) return this._t("last_failure", { when });
-    const n = Object.keys(this._hass.states).filter((id) => id.startsWith("automation.")).length;
-    return n ? this._t("monitored", { n }) : "";
+    const when = this._lastFailure(data);
+    if (when) return this._t("last_failure", { when });
+    // All automations of Home Assistant: the integration does not expose how many it monitors
+    // (its exclusions are not visible to the card), so the label does not claim they are monitored.
+    const n = automationCount(this._hass);
+    return n ? this._t("automations", { n }) : "";
   }
 
   _header(data, sub) {
@@ -663,14 +748,14 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     const actions = [];
     const trace = tracePath(h, a.entity_id, a.unique_id);
     const edit = editorPath(h, a.entity_id, a.unique_id);
-    if (trace) actions.push(`<button class="btn" data-path="${esc(trace)}">${svgIcon(ICONS.trace)}<span>${esc(this._t("trace"))}</span></button>`);
-    if (edit) actions.push(`<button class="btn" data-path="${esc(edit)}">${svgIcon(ICONS.edit)}<span>${esc(this._t("edit"))}</span></button>`);
+    if (trace) actions.push(`<button class="btn" data-key="trace" data-path="${esc(trace)}">${svgIcon(ICONS.trace)}<span>${esc(this._t("trace"))}</span></button>`);
+    if (edit) actions.push(`<button class="btn" data-key="edit" data-path="${esc(edit)}">${svgIcon(ICONS.edit)}<span>${esc(this._t("edit"))}</span></button>`);
     if (controls)
       actions.push(
-        `<button class="btn" data-action="reset" data-entity="${esc(a.entity_id)}" data-label="${esc(name)}">${svgIcon(ICONS.reset)}<span>${esc(this._t("reset"))}</span></button>`
+        `<button class="btn" data-key="reset" data-action="reset" data-entity="${esc(a.entity_id)}" data-label="${esc(name)}">${svgIcon(ICONS.reset)}<span>${esc(this._t("reset"))}</span></button>`
       );
     return `
-      <div class="item crit">
+      <div class="item crit" data-key="${esc(a.entity_id)}">
         ${svgIcon(ICONS.robot_alert)}
         <div class="body">
           <div class="top">
@@ -698,10 +783,10 @@ class AutomationMonitorCard extends AutomationMonitorBase {
       const name = src.name || h.states[src.entity_id]?.attributes?.friendly_name || src.entity_id;
       const path = editorPath(h, src.entity_id, src.unique_id);
       const icon = ICONS[domain] || ICONS.automation;
-      return `<span class="tag link" role="button" tabindex="0" ${path ? `data-path="${esc(path)}"` : `data-entity="${esc(src.entity_id)}"`} title="${esc(src.entity_id)}">${svgIcon(icon)}${esc(name)}</span>`;
+      return `<span class="tag link" role="button" tabindex="0" data-key="${esc(src.entity_id)}" ${path ? `data-path="${esc(path)}"` : `data-entity="${esc(src.entity_id)}"`} title="${esc(src.entity_id)}">${svgIcon(icon)}${esc(name)}</span>`;
     });
     return `
-      <div class="item warn">
+      <div class="item warn" data-key="${esc(e.entity_id)}">
         ${svgIcon(ICONS.disconnect)}
         <div class="body">
           <div class="top">
@@ -765,7 +850,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorBase {
     if (last) {
       const when = ago(this._hass, c, last.last_error_time);
       lines.push(
-        `<div class="line crit clickable" role="button" tabindex="0" data-entity="${esc(last.entity_id)}">${svgIcon(ICONS.alert)}<span><b>${esc(last.name || last.entity_id)}</b>${
+        `<div class="line crit clickable" role="button" tabindex="0" data-key="failed:${esc(last.entity_id)}" data-entity="${esc(last.entity_id)}">${svgIcon(ICONS.alert)}<span><b>${esc(last.name || last.entity_id)}</b>${
           when ? ` · ${esc(when)}` : ""
         }</span></div>`
       );
@@ -774,7 +859,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorBase {
     if (off) {
       const when = ago(this._hass, c, off.unavailable_since);
       lines.push(
-        `<div class="line warn clickable" role="button" tabindex="0" data-entity="${esc(off.entity_id)}">${svgIcon(ICONS.disconnect)}<span><b>${esc(off.name || off.entity_id)}</b>${
+        `<div class="line warn clickable" role="button" tabindex="0" data-key="linked:${esc(off.entity_id)}" data-entity="${esc(off.entity_id)}">${svgIcon(ICONS.disconnect)}<span><b>${esc(off.name || off.entity_id)}</b>${
           when ? ` · ${esc(this._t("unavailable_since", { when }))}` : ""
         }</span></div>`
       );
