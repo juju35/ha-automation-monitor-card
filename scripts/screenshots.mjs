@@ -52,6 +52,8 @@ const shots = [
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
   { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
   { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
+  { file: "mini-card-zoom", type: "automation-monitor-mini-card", theme: "light", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom-dark", type: "automation-monitor-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];
 
 const browser = await chromium.launch(
@@ -65,7 +67,7 @@ for (const s of shots) {
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
   await page.evaluate(
-    ({ type, config, states, entities, overrides }) => {
+    ({ type, config, states, entities, overrides, zoom }) => {
       for (const [id, o] of Object.entries(overrides || {})) states[id] = { ...states[id], ...o };
       const el = document.createElement(type);
       el.setConfig({ type: `custom:${type}`, ...config });
@@ -73,8 +75,13 @@ for (const s of shots) {
         states, entities, language: "en", locale: { language: "en" }, callService: () => {},
       };
       document.getElementById("root").appendChild(el);
+      // A mouse click (detail 1) on the detail button: the zoomed-in view, without a keyboard focus ring.
+      if (zoom)
+        el.shadowRoot
+          .querySelector(".zoom")
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
     },
-    { type: s.type, config: s.config, states, entities, overrides: s.overrides }
+    { type: s.type, config: s.config, states, entities, overrides: s.overrides, zoom: !!s.zoom }
   );
   for (const sel of s.clicks || []) {
     await page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);

@@ -28,6 +28,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - **Clear** a failure (or **Clear all**) with the integration's `automation_monitor.reset` action, with confirmation
 - Unavailable linked entities: name, entity id, how long it has been unavailable and the automations, scripts and scenes that use it (click one to open its editor)
 - **Refresh** button in the header of both cards, always visible, rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
+- Detail button at the top right of the mini card: it switches to the full card and back; a click anywhere outside the card brings the compact view back
 - Failed automations and unavailable linked entities are folded by default: click the section title to unfold them; long lists are cut to a configurable number of items, with a "Show more" button
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
@@ -106,6 +107,7 @@ title: Automations
 show_logo: true
 show_failed: true
 show_linked: true
+zoom: true
 language: fr
 ```
 
@@ -122,6 +124,7 @@ language: fr
 | `show_details` | full | `true` | Error message of each failed automation |
 | `show_controls` | full | `true` | Clear and Clear all buttons (the Trace and Edit links and the Refresh button are always shown) |
 | `max_items` | full | `5` | Items shown per list before the "Show more" button |
+| `zoom` | mini | `true` | Detail button at the top right: switches to the full card and back (`false` removes it) |
 | `exclude_devices` | both | — | Devices to ignore: their unavailable linked entities (and failed automations attached to them) are left out of the lists, counters and status. Device ids (written by the visual editor) or device names |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |
@@ -133,6 +136,7 @@ language: fr
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 | ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
+| ![mini card zoomed in](screenshots/mini-card-zoom.png) | ![mini card zoomed in dark](screenshots/mini-card-zoom-dark.png) |
 
 Lists unfolded:
 
