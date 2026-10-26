@@ -45,13 +45,13 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 </style></head><body><div id="root"></div></body></html>`;
 
 const shots = [
-  { file: "card", type: "automation-monitor-card", theme: "light", width: 480, config: {} },
-  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 480, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 480, config: { language: "fr" }, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 480, config: { language: "fr" }, overrides: allGood },
+  { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
+  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
-  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: { language: "fr" } },
-  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: { language: "fr" }, overrides: allGood },
+  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
+  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
 ];
 
 const browser = await chromium.launch(
