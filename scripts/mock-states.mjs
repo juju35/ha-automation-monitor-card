@@ -1,5 +1,5 @@
 // Mock Home Assistant registry and states shaped like the Automation Monitor integration, used to
-// render screenshots. Entity ids are in French on purpose: the cards never rely on them.
+// render screenshots. The sensor entity ids are in French on purpose: the cards never rely on them.
 export const states = {};
 export const entities = {};
 
@@ -8,17 +8,17 @@ const state = (entity_id, value, attributes = {}) => (states[entity_id] = { enti
 
 // Automations, scripts and scenes referenced by the sensors (with their editor id).
 const automations = {
-  "automation.arrosage_jardin": ["Arrosage du jardin", "1712345678901"],
-  "automation.volets_coucher_soleil": ["Volets au coucher du soleil", "1712345678902"],
-  "automation.notification_lave_linge": ["Notification fin du lave-linge", "1712345678903"],
-  "automation.lumiere_entree": ["Lumière de l'entrée", "1712345678904"],
-  "automation.chauffage_matin": ["Chauffage du matin", "1712345678905"],
-  "automation.alarme_depart": ["Alarme au départ", "1712345678906"],
+  "automation.garden_watering": ["Garden watering", "1712345678901"],
+  "automation.shutters_at_sunset": ["Shutters at sunset", "1712345678902"],
+  "automation.washing_machine_done": ["Washing machine done notification", "1712345678903"],
+  "automation.hallway_light": ["Hallway light", "1712345678904"],
+  "automation.morning_heating": ["Morning heating", "1712345678905"],
+  "automation.arm_alarm_on_leaving": ["Arm alarm on leaving", "1712345678906"],
 };
 for (const [id, [name, uid]] of Object.entries(automations)) state(id, "on", { id: uid, friendly_name: name });
-for (let i = 1; i <= 18; i++) state(`automation.autre_${i}`, "on", { id: `17000000000${i}`, friendly_name: `Automatisation ${i}` });
-state("script.ambiance_soiree", "off", { friendly_name: "Ambiance soirée" });
-state("scene.cinema", "2026-10-19T20:00:00+00:00", { id: "1712345600001", friendly_name: "Cinéma" });
+for (let i = 1; i <= 18; i++) state(`automation.other_${i}`, "on", { id: `17000000000${i}`, friendly_name: `Automation ${i}` });
+state("script.evening_mood", "off", { friendly_name: "Evening mood" });
+state("scene.movie_night", "2026-10-19T20:00:00+00:00", { id: "1712345600001", friendly_name: "Movie night" });
 
 const failure = (entity_id, minutes, error_step, error_message, consecutive_failures = 1) => ({
   entity_id,
@@ -48,14 +48,14 @@ const linked = (entity_id, name, minutes, referenced_by) => ({
 });
 
 export const failures = [
-  failure("automation.arrosage_jardin", 12, "action/1", "Error calling service: valve.open_valve - Timeout while communicating with the device", 3),
-  failure("automation.volets_coucher_soleil", 95, "action/0/choose/1/sequence/0", "Template error: float got invalid input 'unavailable' when rendering '{{ states(\"sensor.luminosite\") | float < 50 }}'"),
-  failure("automation.notification_lave_linge", 60 * 26, "action/2", "Action notify.mobile_app_iphone not found"),
+  failure("automation.garden_watering", 12, "action/1", "Error calling service: valve.open_valve - Timeout while communicating with the device", 3),
+  failure("automation.shutters_at_sunset", 95, "action/0/choose/1/sequence/0", "Template error: float got invalid input 'unavailable' when rendering '{{ states(\"sensor.outdoor_illuminance\") | float < 50 }}'"),
+  failure("automation.washing_machine_done", 60 * 26, "action/2", "Action notify.mobile_app_iphone not found"),
 ];
 
 export const unavailable = [
-  linked("light.entree", "Plafonnier entrée", 45, ["automation.lumiere_entree", "automation.alarme_depart", "scene.cinema"]),
-  linked("climate.radiateur_salon", "Radiateur salon", 60 * 5, ["automation.chauffage_matin", "script.ambiance_soiree"]),
+  linked("light.hallway", "Hallway ceiling light", 45, ["automation.hallway_light", "automation.arm_alarm_on_leaving", "scene.movie_night"]),
+  linked("climate.living_room_radiator", "Living room radiator", 60 * 5, ["automation.morning_heating", "script.evening_mood"]),
 ];
 
 const sensor = (entity_id, translation_key, list, key, icon) => {

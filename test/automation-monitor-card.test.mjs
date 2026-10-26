@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { AutomationMonitorCard, resolve, sameSig, esc, editorPath, excludedDevices } = load("automation-monitor-card.js", [
+const { AutomationMonitorCard, AutomationMonitorMiniCard, resolve, sameSig, esc, editorPath, excludedDevices } = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
+  "AutomationMonitorMiniCard",
   "resolve",
   "sameSig",
   "esc",
@@ -123,4 +124,69 @@ test("the automations are only counted while the subtitle shows their number", (
   const more = { ...clear, "automation.b": { entity_id: "automation.b", state: "on", attributes: {} } };
   assert.ok(!sameSig(before, card(more)._signature()));
   assert.match(card(more)._render(), /2 automations/);
+});
+
+// Mini card detail button: a mini card whose renders are captured instead of patched into a DOM.
+const zoomCard = (config = {}) => {
+  const el = new AutomationMonitorMiniCard();
+  el._config = config;
+  el._hass = { states: baseStates(), entities, devices, language: config.language || "en" };
+  el._update = () => {
+    el.html = el._render();
+  };
+  el.shadowRoot.querySelector = () => null;
+  el._update();
+  return el;
+};
+const node = (localName) => ({ localName });
+const click = (path, extra = {}) => ({ composedPath: () => path, stopPropagation() {}, detail: 1, ...extra });
+const zoomButton = () => click([], { target: { closest: (sel) => (sel === ".zoom" ? {} : null) } });
+
+test("the mini card detail button switches to the full card content and back", () => {
+  const el = zoomCard();
+  const full = card(el._hass.states);
+  full._hass = el._hass;
+  assert.match(el.html, /class="line crit/);
+  assert.match(el.html, />Failed</);
+  // Rightmost header element, after the status pill and the Refresh button.
+  assert.match(el.html, /class="chip[\s\S]*?class="refresh[\s\S]*?<button class="zoom" title="Show the full card">[\s\S]*?<\/button>\s*<\/div>/);
+  assert.equal(el.getCardSize(), 3);
+  let stopped = false;
+  el._zoomClick({ ...zoomButton(), stopPropagation: () => (stopped = true) });
+  assert.equal(stopped, true);
+  assert.equal(el._zoomed, true);
+  assert.doesNotMatch(el.html, /class="line/);
+  assert.equal(el.html.replace(/<button class="zoom"[\s\S]*?<\/button>/, ""), full._render());
+  assert.match(el.html, /<button class="zoom" title="Back to the compact view">/);
+  assert.equal(el.getCardSize(), full.getCardSize());
+  assert.deepEqual({ ...el.getGridOptions() }, { ...full.getGridOptions() });
+  el._zoomClick(zoomButton());
+  assert.equal(el._zoomed, false);
+  assert.match(el.html, /class="line crit/);
+  assert.equal(el.getCardSize(), 3);
+});
+
+test("a click outside the mini card collapses it, a click inside or in a dialog does not", () => {
+  const el = zoomCard({ language: "fr" });
+  assert.match(el.html, /title="Afficher la carte complète"/);
+  el._zoomClick(zoomButton());
+  assert.match(el.html, /title="Revenir à la vue compacte"/);
+  el._onUnzoom(click([node("div"), el, node("body")]));
+  assert.equal(el._zoomed, true);
+  for (const dialog of ["ha-more-info-dialog", "ha-dialog", "dialog"]) {
+    el._onUnzoom(click([node("div"), node(dialog), node("body")]));
+    assert.equal(el._zoomed, true, dialog);
+  }
+  // Other clicks on the card leave it as it is.
+  el._zoomClick(click([el], { target: { closest: () => null } }));
+  assert.equal(el._zoomed, true);
+  el._onUnzoom(click([node("div"), node("body")]));
+  assert.equal(el._zoomed, false);
+  assert.match(el.html, /class="line crit/);
+});
+
+test("zoom: false removes the mini card detail button, the full card has none", () => {
+  const el = zoomCard({ zoom: false });
+  assert.doesNotMatch(el.html, /class="zoom"/);
+  assert.doesNotMatch(card(baseStates())._render(), /class="zoom"/);
 });

@@ -45,13 +45,15 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 </style></head><body><div id="root"></div></body></html>`;
 
 const shots = [
-  { file: "card", type: "automation-monitor-card", theme: "light", width: 480, config: {} },
-  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 480, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 480, config: { language: "fr" }, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 480, config: { language: "fr" }, overrides: allGood },
+  { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
+  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
-  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: { language: "fr" } },
-  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: { language: "fr" }, overrides: allGood },
+  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
+  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
+  { file: "mini-card-zoom", type: "automation-monitor-mini-card", theme: "light", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom-dark", type: "automation-monitor-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];
 
 const browser = await chromium.launch(
@@ -65,7 +67,7 @@ for (const s of shots) {
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
   await page.evaluate(
-    ({ type, config, states, entities, overrides }) => {
+    ({ type, config, states, entities, overrides, zoom }) => {
       for (const [id, o] of Object.entries(overrides || {})) states[id] = { ...states[id], ...o };
       const el = document.createElement(type);
       el.setConfig({ type: `custom:${type}`, ...config });
@@ -73,8 +75,13 @@ for (const s of shots) {
         states, entities, language: "en", locale: { language: "en" }, callService: () => {},
       };
       document.getElementById("root").appendChild(el);
+      // A mouse click (detail 1) on the detail button: the zoomed-in view, without a keyboard focus ring.
+      if (zoom)
+        el.shadowRoot
+          .querySelector(".zoom")
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
     },
-    { type: s.type, config: s.config, states, entities, overrides: s.overrides }
+    { type: s.type, config: s.config, states, entities, overrides: s.overrides, zoom: !!s.zoom }
   );
   for (const sel of s.clicks || []) {
     await page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);

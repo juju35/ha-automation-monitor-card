@@ -35,6 +35,9 @@ const ICONS = {
   scene: "M17.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,9A1.5,1.5 0 0,1 19,10.5A1.5,1.5 0 0,1 17.5,12M14.5,8A1.5,1.5 0 0,1 13,6.5A1.5,1.5 0 0,1 14.5,5A1.5,1.5 0 0,1 16,6.5A1.5,1.5 0 0,1 14.5,8M9.5,8A1.5,1.5 0 0,1 8,6.5A1.5,1.5 0 0,1 9.5,5A1.5,1.5 0 0,1 11,6.5A1.5,1.5 0 0,1 9.5,8M6.5,12A1.5,1.5 0 0,1 5,10.5A1.5,1.5 0 0,1 6.5,9A1.5,1.5 0 0,1 8,10.5A1.5,1.5 0 0,1 6.5,12M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A1.5,1.5 0 0,0 13.5,19.5C13.5,19.11 13.35,18.76 13.11,18.5C12.88,18.23 12.73,17.88 12.73,17.5A1.5,1.5 0 0,1 14.23,16H16A5,5 0 0,0 21,11C21,6.58 16.97,3 12,3Z",
   chevron_down: "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z",
   chevron_up: "M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z",
+  // mdi:arrow-expand and mdi:arrow-collapse, the mini card's detail button.
+  expand: "M10,21V19H6.41L10.91,14.5L9.5,13.09L5,17.59V14H3V21H10M14.5,10.91L19,6.41V10H21V3H14V5H17.59L13.09,9.5L14.5,10.91Z",
+  collapse: "M19.5,3.09L15,7.59V4H13V11H20V9H16.41L20.91,4.5L19.5,3.09M4,13V15H7.59L3.09,19.5L4.5,20.91L9,16.41V20H11V13H4Z",
 };
 
 const STRINGS = {
@@ -63,6 +66,8 @@ const STRINGS = {
     show_more: "Show {n} more",
     show_less: "Show less",
     just_now: "just now",
+    zoom_in: "Show the full card",
+    zoom_out: "Back to the compact view",
     no_integration: "Automation Monitor not found. Is the Automation Monitor integration installed?",
     unavailable: "The Automation Monitor sensors are unavailable.",
     no_registry: "This card needs Home Assistant 2024.8 or later.",
@@ -77,6 +82,8 @@ const STRINGS = {
     show_details: "Show error details",
     max_items: "Items shown per list",
     exclude_devices: "Ignored devices",
+    zoom: "Detail button",
+    zoom_helper: "Switches the mini card to the full card and back",
     language: "Language",
     lang_auto: "Automatic",
   },
@@ -105,6 +112,8 @@ const STRINGS = {
     show_more: "Afficher {n} de plus",
     show_less: "Afficher moins",
     just_now: "à l'instant",
+    zoom_in: "Afficher la carte complète",
+    zoom_out: "Revenir à la vue compacte",
     no_integration: "Automation Monitor introuvable. L'intégration Automation Monitor est-elle installée ?",
     unavailable: "Les capteurs d'Automation Monitor sont indisponibles.",
     no_registry: "Cette carte nécessite Home Assistant 2024.8 ou plus récent.",
@@ -119,6 +128,8 @@ const STRINGS = {
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
     exclude_devices: "Appareils ignorés",
+    zoom: "Bouton de détail",
+    zoom_helper: "Bascule la mini-carte en carte complète, et inversement",
     language: "Langue",
     lang_auto: "Automatique",
   },
@@ -352,8 +363,8 @@ const BASE_STYLE = `
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent); color: var(--c, var(--am-ok)); flex: none; }
-  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
-  .logo { height: 36px; width: 36px; border-radius: 10px; flex: none; }
+  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
+  .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
              flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }
@@ -381,7 +392,14 @@ const BASE_STYLE = `
   .counter.crit .n, .counter.warn .n { color: var(--c); }
   .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; }
   .counter > div:last-child { min-width: 0; }
+  .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px;
+          border-radius: 50%; display: grid; place-items: center; color: var(--secondary-text-color); }
+  .zoom .icon { width: 16px; height: 16px; }
+  .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
+  .zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
 `;
+// A click inside a dialog (more-info opened from the card, say) is not a click outside the card.
+const inDialog = (ev) => ev.composedPath().some((n) => ["ha-more-info-dialog", "ha-dialog", "dialog"].includes(n.localName));
 
 class AutomationMonitorBase extends HTMLElement {
   constructor() {
@@ -593,7 +611,13 @@ class AutomationMonitorBase extends HTMLElement {
         </div>
         <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
         <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
+        ${this._zoomButton()}
       </div>`;
+  }
+
+  // Button at the far right of the header: only the mini card has one.
+  _zoomButton() {
+    return "";
   }
 
   _counters(data) {
@@ -805,9 +829,10 @@ class AutomationMonitorCard extends AutomationMonitorBase {
 // ---------------------------------------------------------------------------
 
 const MINI_STYLE = `
-  .header { padding: 12px 12px 8px; }
   .logo { height: 32px; width: 32px; border-radius: 8px; }
   .name { font-size: 16px; }
+  /* A narrower Refresh button (same icon) leaves the title room for the detail button. */
+  .refresh { width: 28px; height: 28px; }
   .content { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .counter { padding: 8px 10px; }
   .counter .badge { width: 30px; height: 30px; }
@@ -819,29 +844,68 @@ const MINI_STYLE = `
   .line b { font-weight: 500; color: var(--primary-text-color); }
 `;
 
-class AutomationMonitorMiniCard extends AutomationMonitorBase {
+// The mini card extends the full card: its detail button (top right, `zoom: false` removes it) switches it to the
+// full card's content, same configuration, and back; a click anywhere outside the card brings it back too.
+class AutomationMonitorMiniCard extends AutomationMonitorCard {
   constructor() {
     super();
-    this._compact = true;
+    this._zoomed = false;
+    this.shadowRoot.addEventListener("click", (ev) => this._zoomClick(ev));
+    // A click outside the card, and not in a dialog opened from it, brings it back to the compact view.
+    this._onUnzoom = (ev) => {
+      if (this._zoomed && !ev.composedPath().includes(this) && !inDialog(ev)) this._setZoom(false);
+    };
   }
 
   static getConfigElement() {
     return document.createElement("automation-monitor-mini-card-editor");
   }
 
-  static getStubConfig() {
-    return {};
+  // Short counter labels, and no automation count in the signature, while compact.
+  get _compact() {
+    return !this._zoomed;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("click", this._onUnzoom, true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener("click", this._onUnzoom, true);
   }
 
   getCardSize() {
-    return 3;
+    return this._zoomed ? super.getCardSize() : 3;
   }
 
   getGridOptions() {
-    return { columns: 6, min_columns: 6 };
+    return this._zoomed ? super.getGridOptions() : { columns: 6, min_columns: 6 };
+  }
+
+  _setZoom(zoomed) {
+    this._zoomed = zoomed;
+    this._update();
+  }
+
+  // A click on the detail button: never a tap on anything else of the card.
+  _zoomClick(ev) {
+    if (!ev.target?.closest?.(".zoom")) return;
+    ev.stopPropagation();
+    this._setZoom(!this._zoomed);
+    // Keyboard use (Enter / Space: no click count) keeps the focus on the button.
+    if (ev.detail === 0) this.shadowRoot.querySelector(".zoom")?.focus();
+  }
+
+  _zoomButton() {
+    if (this._config.zoom === false) return "";
+    const z = this._zoomed;
+    return `<button class="zoom" title="${esc(this._t(z ? "zoom_out" : "zoom_in"))}">${svgIcon(z ? ICONS.collapse : ICONS.expand)}</button>`;
   }
 
   _render() {
+    if (this._zoomed) return super._render();
     const data = this._data();
     if (data.error) return this._errorCard(data.error);
     const c = this._config;
@@ -929,6 +993,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
     if (!this._form) {
       this._form = document.createElement("ha-form");
       this._form.computeLabel = (s) => t(this._hass, this._config, s.name);
+      this._form.computeHelper = (s) => STRINGS[lang(this._hass, this._config)][`${s.name}_helper`];
       this._form.addEventListener("value-changed", (ev) => {
         ev.stopPropagation();
         const config = { ...ev.detail.value };
@@ -959,7 +1024,11 @@ class AutomationMonitorCardEditor extends AutomationMonitorEditorBase {
   }
 }
 
-class AutomationMonitorMiniCardEditor extends AutomationMonitorEditorBase {}
+class AutomationMonitorMiniCardEditor extends AutomationMonitorEditorBase {
+  static get toggles() {
+    return [...AutomationMonitorEditorBase.toggles, ["zoom", true]];
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Registration
