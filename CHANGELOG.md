@@ -4,6 +4,7 @@
 
 ### Changes
 - The Automation Monitor logo in the header of the full card is 40 px (was 36 px), the same size as the header icon of the other cards.
+- Header geometry: 8 px between the header and the counters on the full card (was 4 px), as on the mini card and the other cards of the family.
 - Detail button at the top right of the mini card (after the status pill and the Refresh button): it shows the full card with the same options, and a second click brings the compact view back. A click anywhere outside the card also folds it back; clicks on the card or in a dialog opened from it (more-info) do not. The logo stays 32 px on the compact view, 40 px zoomed in; the compact view's Refresh button is a little narrower (same icon) so the title keeps its room. New `zoom` option (on by default, in the visual editor): `zoom: false` removes the button.
 
 ### Maintenance

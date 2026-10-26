@@ -363,7 +363,7 @@ const BASE_STYLE = `
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent); color: var(--c, var(--am-ok)); flex: none; }
-  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
+  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
@@ -829,7 +829,6 @@ class AutomationMonitorCard extends AutomationMonitorBase {
 // ---------------------------------------------------------------------------
 
 const MINI_STYLE = `
-  .header { padding: 12px 12px 8px; }
   .logo { height: 32px; width: 32px; border-radius: 8px; }
   .name { font-size: 16px; }
   /* A narrower Refresh button (same icon) leaves the title room for the detail button. */
