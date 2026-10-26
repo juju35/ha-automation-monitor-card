@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.12.0 - 2026-10-26
+
+### Fixes
+- **Mini card**: the detail button now sits flush top-right and vertically centred on the header, matching the other cards (it was pulled slightly left).
+
 ## 1.11.0
 ### Changes
 - The Automation Monitor logo in the header of the full card is 40 px (was 36 px), the same size as the header icon of the other cards.
