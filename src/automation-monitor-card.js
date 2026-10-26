@@ -392,7 +392,7 @@ const BASE_STYLE = `
   .counter.crit .n, .counter.warn .n { color: var(--c); }
   .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; }
   .counter > div:last-child { min-width: 0; }
-  .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px;
+  .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0;
           border-radius: 50%; display: grid; place-items: center; color: var(--secondary-text-color); }
   .zoom .icon { width: 16px; height: 16px; }
   .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
