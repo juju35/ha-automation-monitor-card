@@ -132,7 +132,7 @@ language: fr
 
 ## Screenshots
 
-While the entity list rebuilds, the card animates: the Refresh button spins until the scan finishes. It settles to a still card once done (and honours `prefers-reduced-motion`).
+While the entity list rebuilds, the card animates: the Refresh button spins until the scan finishes. It settles to a still card once done.
 
 ![refresh animation](screenshots/refreshing.gif)
 
