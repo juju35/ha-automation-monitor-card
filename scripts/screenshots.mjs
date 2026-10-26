@@ -1,8 +1,11 @@
 // Renders the cards with mock Automation Monitor data and saves the README screenshots.
 // Usage: npm run build && npm run screenshots
-import { chromium } from "playwright";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { chromium } from "playwright";
 import { states, entities, allGood } from "./mock-states.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -44,25 +47,12 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
          font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; width: ${width}px; }
 </style></head><body><div id="root"></div></body></html>`;
 
-const shots = [
-  { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
-  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
-  { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
-  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
-  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
-  { file: "mini-card-zoom", type: "automation-monitor-mini-card", theme: "light", width: 460, config: {}, zoom: true },
-  { file: "mini-card-zoom-dark", type: "automation-monitor-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
-];
-
-const browser = await chromium.launch(
-  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
-);
-for (const s of shots) {
-  // A fresh page for each capture: the card script declares its classes and custom elements once per page.
+// Mounts a shot's card on a fresh page (the card script declares its classes and custom elements once per page) and
+// returns it. With freezeClock, timers are frozen so a transient state (the refresh spin) holds still for capture.
+async function openCard(browser, s, { freezeClock = false } = {}) {
   const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
   page.on("pageerror", (err) => console.error(`${s.file}: ${err.message}`));
+  if (freezeClock) await page.clock.install({ time: new Date("2026-10-24T18:44:00Z") });
   await page.setContent(page_html(s.theme, s.width));
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
@@ -83,6 +73,26 @@ for (const s of shots) {
     },
     { type: s.type, config: s.config, states, entities, overrides: s.overrides, zoom: !!s.zoom }
   );
+  return page;
+}
+
+const shots = [
+  { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
+  { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
+  { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
+  { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
+  { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
+  { file: "mini-card-zoom", type: "automation-monitor-mini-card", theme: "light", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom-dark", type: "automation-monitor-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
+];
+
+const browser = await chromium.launch(
+  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
+);
+for (const s of shots) {
+  const page = await openCard(browser, s);
   for (const sel of s.clicks || []) {
     await page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);
     await page.waitForTimeout(100);
@@ -96,5 +106,45 @@ for (const s of shots) {
   });
   console.log(`screenshots/${s.file}.png`);
   await page.close();
+}
+
+// The Refresh button spinning while the entity list rebuilds, recorded as a looping GIF — needs ffmpeg on PATH. The
+// clock is frozen so the transient spin holds; every animation is paused and stepped frame by frame, so the GIF is
+// identical whatever the machine's speed.
+const gif = { file: "refreshing", type: "automation-monitor-card", theme: "light", width: 460, config: {} };
+const FPS = 20;
+const SECONDS = 2;
+{
+  const page = await openCard(browser, gif, { freezeClock: true });
+  await page.evaluate(() =>
+    document
+      .querySelector("#root")
+      .firstElementChild.shadowRoot.querySelector('[data-action="rebuild"]')
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }))
+  );
+  await page.waitForTimeout(200);
+  const box = await page.locator("#root").boundingBox();
+  const clip = { x: 0, y: 0, width: gif.width + 32, height: Math.ceil(box.height) + 32 };
+  const dir = mkdtempSync(join(tmpdir(), "am-frames-"));
+  const frames = Math.round(FPS * SECONDS);
+  for (let i = 0; i < frames; i++) {
+    await page.evaluate((t) => {
+      for (const a of document.getAnimations()) {
+        a.pause();
+        a.currentTime = t;
+      }
+    }, (i * 1000) / FPS);
+    await page.screenshot({ path: join(dir, `f${String(i).padStart(3, "0")}.png`), clip });
+  }
+  await page.close();
+  const out = `${root}screenshots/${gif.file}.gif`;
+  // Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small.
+  execFileSync("ffmpeg", [
+    "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
+    "-vf", `scale=${clip.width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
+    "-loop", "0", out,
+  ]);
+  rmSync(dir, { recursive: true });
+  console.log(`screenshots/${gif.file}.gif`);
 }
 await browser.close();
