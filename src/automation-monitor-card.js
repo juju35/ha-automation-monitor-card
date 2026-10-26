@@ -353,7 +353,7 @@ const BASE_STYLE = `
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent); color: var(--c, var(--am-ok)); flex: none; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
-  .logo { height: 36px; width: 36px; border-radius: 10px; flex: none; }
+  .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
              flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }

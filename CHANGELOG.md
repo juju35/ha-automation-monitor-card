@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- The Automation Monitor logo in the header of the full card is 40 px (was 36 px), the same size as the header icon of the other cards.
+
 ## 1.10.1
 
 ### Fixes
