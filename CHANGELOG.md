@@ -1,7 +1,6 @@
 # Changelog
 
-## Unreleased
-
+## 1.11.0
 ### Changes
 - The Automation Monitor logo in the header of the full card is 40 px (was 36 px), the same size as the header icon of the other cards.
 - Header geometry: 8 px between the header and the counters on the full card (was 4 px), as on the mini card and the other cards of the family.
