@@ -114,6 +114,18 @@ for (const s of shots) {
 const gif = { file: "refreshing", type: "automation-monitor-card", theme: "light", width: 460, config: {} };
 const FPS = 20;
 const SECONDS = 2;
+
+// Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small.
+const encodeGif = (dir, file, width) => {
+  const out = `${root}screenshots/${file}.gif`;
+  execFileSync("ffmpeg", [
+    "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
+    "-vf", `scale=${width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
+    "-loop", "0", out,
+  ]);
+  rmSync(dir, { recursive: true });
+  console.log(`screenshots/${file}.gif`);
+};
 {
   const page = await openCard(browser, gif, { freezeClock: true });
   await page.evaluate(() =>
@@ -137,14 +149,56 @@ const SECONDS = 2;
     await page.screenshot({ path: join(dir, `f${String(i).padStart(3, "0")}.png`), clip });
   }
   await page.close();
-  const out = `${root}screenshots/${gif.file}.gif`;
-  // Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small.
-  execFileSync("ffmpeg", [
-    "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
-    "-vf", `scale=${clip.width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
-    "-loop", "0", out,
-  ]);
-  rmSync(dir, { recursive: true });
-  console.log(`screenshots/${gif.file}.gif`);
+  encodeGif(dir, gif.file, clip.width);
+}
+
+// The other animation of the card: a click on a section title folds or unfolds its list, turning the
+// chevron (.2s transition). The transitions are paused and stepped frame by frame like the spin above.
+const fold = { file: "folding", type: "automation-monitor-card", theme: "light", width: 460, config: {} };
+{
+  const page = await openCard(browser, fold, { freezeClock: true });
+  const click = (sel) =>
+    page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);
+  // Unfold both sections once to size the clip on the tallest layout, then fold them back.
+  await click('[data-section="failed"]');
+  await click('[data-section="linked"]');
+  await page.waitForTimeout(100);
+  const box = await page.locator("#root").boundingBox();
+  const clip = { x: 0, y: 0, width: fold.width + 32, height: Math.ceil(box.height) + 32 };
+  await click('[data-section="failed"]');
+  await click('[data-section="linked"]');
+  await page.waitForTimeout(400);
+  const dir = mkdtempSync(join(tmpdir(), "am-frames-"));
+  let i = 0;
+  const shoot = () => page.screenshot({ path: join(dir, `f${String(i++).padStart(3, "0")}.png`), clip });
+  const hold = async (frames) => {
+    for (let k = 0; k < frames; k++) await shoot();
+  };
+  // Steps the chevron transition the click just started, then jumps it to its end state.
+  const turn = async (sel) => {
+    await click(sel);
+    for (let k = 0; k <= Math.round(FPS * 0.2); k++) {
+      await page.evaluate((t) => {
+        for (const a of document.getAnimations()) {
+          a.pause();
+          a.currentTime = t;
+        }
+      }, (k * 1000) / FPS);
+      await shoot();
+    }
+    await page.evaluate(() => {
+      for (const a of document.getAnimations()) a.finish();
+    });
+  };
+  await hold(6); // both sections folded
+  await turn('[data-section="failed"]');
+  await hold(4);
+  await turn('[data-section="linked"]');
+  await hold(14); // both sections unfolded
+  await turn('[data-section="failed"]');
+  await turn('[data-section="linked"]');
+  await hold(10); // folded again
+  await page.close();
+  encodeGif(dir, fold.file, clip.width);
 }
 await browser.close();
