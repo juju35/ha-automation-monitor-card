@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.13.0 - 2026-10-28
+
+### Changes
+- Clear and Clear all now ask for confirmation in a popup inside the card (OK / Cancel, Escape or a click outside to cancel), themed like the card, instead of the browser's native confirm dialog.
+
+### Fixes
+- A click inside a dialog opened from the card (more-info) no longer folds the open sections behind it.
+- Two cards with different `exclude_devices` on the same dashboard no longer slow each other down by rescanning all devices on every update.
+- The minute tick for relative times no longer re-renders the card when it shows none ("All good").
+- The entity of the status chip and counters is escaped like the rest of the card.
+
+### Maintenance
+- Release workflow gated on the unit and browser tests (Chromium installed in CI); screenshots workflow safe for forks; `hacs/action` pinned on a release tag; Dependabot also tracks npm.
+- README: new `folding.gif` showing the section fold/unfold, Refresh GIF with consistent relative times, dark screenshot caption fixed.
+
 ## 1.12.0 - 2026-10-26
 
 ### Fixes
