@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { AutomationMonitorCard, AutomationMonitorMiniCard, resolve, sameSig, esc, editorPath, excludedDevices } = load("automation-monitor-card.js", [
+const { AutomationMonitorCard, AutomationMonitorMiniCard, resolve, sameSig, esc, editorPath, excludedDevices, STRINGS } = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
   "AutomationMonitorMiniCard",
   "resolve",
@@ -10,6 +10,7 @@ const { AutomationMonitorCard, AutomationMonitorMiniCard, resolve, sameSig, esc,
   "esc",
   "editorPath",
   "excludedDevices",
+  "STRINGS",
 ]);
 
 const entities = {
@@ -252,4 +253,13 @@ test("zoom: false removes the mini card detail button, the full card has none", 
   const el = zoomCard({ zoom: false });
   assert.doesNotMatch(el.html, /class="zoom"/);
   assert.doesNotMatch(card(baseStates())._render(), /class="zoom"/);
+});
+
+test("I18N parity: every language has exactly the English keys and placeholders", () => {
+  const keys = Object.keys(STRINGS.en).sort();
+  const vars = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
+  for (const l of ["fr", "de", "es"]) {
+    assert.deepEqual(Object.keys(STRINGS[l]).sort(), keys, l);
+    for (const k of keys) assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k]), `${l}.${k}`);
+  }
 });
