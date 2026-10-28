@@ -448,7 +448,7 @@ class AutomationMonitorBase extends HTMLElement {
     // layout under the pointer before the click.
     this._onOutside ??= (ev) => {
       if (!Object.keys(this._folds || {}).length && !Object.keys(this._expanded).length) return;
-      if (ev.composedPath().includes(this)) return;
+      if (ev.composedPath().includes(this) || inDialog(ev)) return;
       this._folds = {};
       this._expanded = {};
       this._update();

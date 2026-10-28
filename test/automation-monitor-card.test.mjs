@@ -185,6 +185,27 @@ test("a click outside the mini card collapses it, a click inside or in a dialog 
   assert.match(el.html, /class="line crit/);
 });
 
+test("a click outside the card folds its sections, a click inside or in a dialog does not", () => {
+  const el = card(baseStates());
+  el._update = () => {};
+  el.connectedCallback();
+  const open = () => {
+    el._folds = { failed: true };
+    el._expanded = { failed: true };
+  };
+  open();
+  el._onOutside(click([node("div"), el, node("body")]));
+  assert.deepEqual({ ...el._folds }, { failed: true });
+  for (const dialog of ["ha-more-info-dialog", "ha-dialog", "dialog"]) {
+    el._onOutside(click([node("div"), node(dialog), node("body")]));
+    assert.deepEqual({ ...el._expanded }, { failed: true }, dialog);
+  }
+  el._onOutside(click([node("div"), node("body")]));
+  assert.deepEqual({ ...el._folds }, {});
+  assert.deepEqual({ ...el._expanded }, {});
+  el.disconnectedCallback();
+});
+
 test("zoom: false removes the mini card detail button, the full card has none", () => {
   const el = zoomCard({ zoom: false });
   assert.doesNotMatch(el.html, /class="zoom"/);
