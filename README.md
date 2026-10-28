@@ -136,7 +136,7 @@ While the entity list rebuilds, the card animates: the Refresh button spins unti
 
 ![refresh animation](screenshots/refreshing.gif)
 
-| Light (lists folded by default) | Dark (French, lists unfolded) |
+| Light (lists folded by default) | Dark (lists unfolded) |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 | ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |

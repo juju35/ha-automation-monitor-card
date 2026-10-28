@@ -5,7 +5,7 @@
 ### Fixes
 - **Mini card**: the detail button now sits flush top-right and vertically centred on the header, matching the other cards (it was pulled slightly left).
 
-## 1.11.0
+## 1.11.0 - 2026-10-26
 ### Changes
 - The Automation Monitor logo in the header of the full card is 40 px (was 36 px), the same size as the header icon of the other cards.
 - Header geometry: 8 px between the header and the counters on the full card (was 4 px), as on the mini card and the other cards of the family.
@@ -14,7 +14,7 @@
 ### Maintenance
 - Tests for the detail button; light and dark screenshots of the zoomed-in mini card.
 
-## 1.10.1
+## 1.10.1 - 2026-10-24
 
 ### Fixes
 - Keyboard focus stays on the row you were on when a new failure moves the list: pressing Enter on a Reset, trace or edit button now always acts on that automation, never on its neighbour.
@@ -23,7 +23,7 @@
 ### Maintenance
 - Browser tests (Chromium) for focus and in-place updates, run in CI.
 
-## 1.10.0
+## 1.10.0 - 2026-10-24
 
 ### Changes
 - The subtitle reads "N automations" instead of "N automations monitored" ("N automatisations" in French): the card cannot see the exclusions set in the integration, so it no longer claims they are all monitored.
@@ -37,24 +37,24 @@
 - CI hardened: actions pinned by commit SHA, read-only token permissions, Dependabot for action updates, duplication report annotated on pull requests.
 - Unit tests (`npm test`, run in CI); lighter updates (registry lookups and `exclude_devices` cached).
 
-## 1.9.1
+## 1.9.1 - 2026-10-23
 
 ### Maintenance
 - Tooling only, no functional change: Biome linting, pre-commit and a Lint CI (duplication checks). Card source modernized (optional chaining, template literals), identical behavior.
 
-## 1.9.0
+## 1.9.0 - 2026-10-22
 
 ### Changes
 - More compact layout with the same information, like the other ha-* cards: 12 px card padding, 36 px header icon, 16 px name and 12 px subtitle, 11 px pills, tighter tiles and sections.
 - Smaller counters (20 px figures, 30 px badges) and list items (8 × 10 px padding, 13 px titles, 11 px tags).
 - The mini card picks up the smaller pills and subtitle.
 
-## 1.8.1
+## 1.8.1 - 2026-10-22
 
 ### Changes
 - The status pill is back on the right of the header: moving it under the title in the previous version is undone.
 
-## 1.8.0
+## 1.8.0 - 2026-10-22
 
 ### Changes
 - The status pill sits under the title, as in the other ha-* cards, instead of on the right of the header.
@@ -63,22 +63,22 @@
 ### Maintenance
 - CHANGELOG headings use the same plain English set as the other ha-* repositories.
 
-## 1.7.0
+## 1.7.0 - 2026-10-22
 
 ### What's new
 - New `exclude_devices` option (both cards, also in the visual editor with a device picker): the entities of these devices are ignored — left out of the lists, the counters and the status. Device ids or device names are accepted, so the YAML can stay readable.
 
-## 1.6.0
+## 1.6.0 - 2026-10-21
 
 ### What's new
 - A click anywhere else on the page folds the lists back to their defaults (`expand_failed`, `expand_linked`) and shortens the lists opened with "Show more" again, as in ha-carburants-france.
 
-## 1.5.1
+## 1.5.1 - 2026-10-21
 
 ### Development
 - The built card is no longer committed in `dist/`: CI builds it on every push, and the release workflow builds it and attaches it to the release, which is where HACS downloads it from. Nothing changes for users.
 
-## 1.5.0
+## 1.5.0 - 2026-10-21
 
 ### Changes
 - The warning color falls back to Home Assistant's default `#ffa600` (was `#ffa000`), like the other ha-* cards.
@@ -87,33 +87,33 @@
 - Releases are published when `version` in `package.json` has no tag yet: bump the version, add its CHANGELOG section and push, like the other ha-* repositories (the manual Release workflow run is no longer needed).
 - Issue templates, stale workflow and a "Update release notes" workflow, shared with the other repositories.
 
-## 1.4.1
+## 1.4.1 - 2026-10-21
 
 ### Changes
 - Section titles show a "shown/total" counter next to the chevron (e.g. `3/3`, or `5/8` when the list is cut by `max_items`), as in the Dockhand card, instead of the colored badge.
 
-## 1.4.0
+## 1.4.0 - 2026-10-21
 
 ### What's new
 - Same folding as the Dockhand card: Failed automations and Unavailable linked entities are folded by default, even with a single item; click the section title (with its chevron) to fold or unfold. The Show / Fold buttons are gone.
 - New `expand_failed` and `expand_linked` options (also in the visual editor) keep a list expanded. They replace `collapse_failed` / `collapse_linked`; `collapse_*: false` is still honoured.
 
-## 1.3.0
+## 1.3.0 - 2026-10-20
 
 ### What's new
 - The Refresh button is now in the header of both cards and always visible, whatever is shown below. It rebuilds the list of entities used by automations, scripts and scenes (`automation_monitor.rebuild_linked_entities`) and spins briefly while doing so.
 
-## 1.2.0
+## 1.2.0 - 2026-10-20
 
 ### What's new
 - The Failed automations and Unavailable linked entities sections are hidden when they have nothing to list: the counters at the top already show 0. The Refresh button of the linked entities only appears when the section is shown.
 
-## 1.1.0
+## 1.1.0 - 2026-10-20
 
 ### What's new
 - When there are several failed automations or several unavailable linked entities, their list is now folded by default: a "Show the N automations" / "Show the N entities" button unfolds it, and "Fold" folds it again. The counters and the status stay visible. Set `collapse_failed: false` or `collapse_linked: false` (also in the visual editor) to always show the lists.
 
-## 1.0.0
+## 1.0.0 - 2026-10-20
 
 First release of the Automation Monitor cards for Home Assistant, built for the [Automation Monitor integration](https://github.com/olli-dot-dev/ha-automation-monitor).
 
