@@ -40,7 +40,6 @@ const run = async ({ focus, next, noMoveBefore = false }) => {
   await page.addScriptTag({ content: src });
   const res = await page.evaluate(
     ({ states, entities, focus, next, FAILED }) => {
-      window.confirm = () => true;
       window.calls = [];
       const hass = (st) => ({ states: st, entities, language: "en", callService: (d, s, data) => window.calls.push(`${d}.${s} ${data.entity_id}`) });
       const el = document.createElement("automation-monitor-card");
@@ -57,10 +56,13 @@ const run = async ({ focus, next, noMoveBefore = false }) => {
     },
     { states, entities, focus, next, FAILED }
   );
+  // First Enter opens the in-card confirmation popup (its OK button takes the focus), second confirms.
+  await page.keyboard.press("Enter");
+  const confirmOpen = await page.evaluate(() => !!document.querySelector("automation-monitor-card").shadowRoot.querySelector(".modal"));
   await page.keyboard.press("Enter");
   const calls = await page.evaluate(() => window.calls);
   await page.close();
-  return { ...res, calls, errors };
+  return { ...res, confirmOpen, calls, errors };
 };
 
 // A new failure of the second automation: it moves to the top (newest first) and shifts the first one.
@@ -73,6 +75,7 @@ test("reordered failures: the focus stays on the same automation and Enter reset
   assert.deepEqual(r.errors, []);
   assert.equal(r.faithful, true);
   assert.equal(r.focused, target);
+  assert.equal(r.confirmOpen, true);
   assert.deepEqual(r.calls, [`automation_monitor.reset ${target}`]);
 });
 

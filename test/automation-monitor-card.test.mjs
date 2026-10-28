@@ -206,6 +206,48 @@ test("a click outside the card folds its sections, a click inside or in a dialog
   el.disconnectedCallback();
 });
 
+test("Clear asks through the in-card popup: OK calls the service, Cancel, Escape or outside do not", async () => {
+  const el = card(baseStates());
+  el._update = () => {};
+  el.connectedCallback();
+  const calls = [];
+  el._hass.callService = (domain, service, data) => calls.push(`${domain}.${service} ${JSON.stringify(data)}`);
+  const openReset = () => {
+    el._confirmClosedAt = 0; // the double-click guard is not what this test exercises
+    el._onClick(click([{ dataset: { action: "reset", entity: "automation.a", label: "A" } }]));
+  };
+  // Cancel button.
+  openReset();
+  assert.match(el._confirm.text, /A/);
+  el._onClick(click([{ dataset: { action: "confirm_cancel" } }]));
+  assert.equal(el._confirm, null);
+  // Escape.
+  openReset();
+  el._onKey({ key: "Escape", stopPropagation() {} });
+  assert.equal(el._confirm, null);
+  // A click outside the card.
+  openReset();
+  el._onOutside(click([node("div"), node("body")]));
+  assert.equal(el._confirm, null);
+  // A click elsewhere on the card neither acts nor closes.
+  openReset();
+  el._onClick(click([{ dataset: { action: "rebuild" } }]));
+  assert.ok(el._confirm);
+  assert.deepEqual(calls, []);
+  // OK calls the service, for one automation and for all.
+  el._onClick(click([{ dataset: { action: "confirm_ok" } }]));
+  assert.equal(el._confirm, null);
+  el._confirmClosedAt = 0;
+  el._onClick(click([{ dataset: { action: "reset_all" } }]));
+  el._onClick(click([{ dataset: { action: "confirm_ok" } }]));
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(calls, ['automation_monitor.reset {"entity_id":"automation.a"}', "automation_monitor.reset {}"]);
+  // Right after a close, the rest of a double click on OK is swallowed.
+  el._onClick(click([{ dataset: { action: "reset", entity: "automation.a", label: "A" } }]));
+  assert.equal(el._confirm, null);
+  el.disconnectedCallback();
+});
+
 test("zoom: false removes the mini card detail button, the full card has none", () => {
   const el = zoomCard({ zoom: false });
   assert.doesNotMatch(el.html, /class="zoom"/);

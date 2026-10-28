@@ -63,6 +63,7 @@ const STRINGS = {
     rebuild_title: "rebuild the list of entities used by automations, scripts and scenes",
     confirm_reset: "Clear the failure of {name}? It will be reported again on its next failure.",
     confirm_reset_all: "Clear all failed automations? They will be reported again on their next failure.",
+    cancel: "Cancel",
     show_more: "Show {n} more",
     show_less: "Show less",
     just_now: "just now",
@@ -109,6 +110,7 @@ const STRINGS = {
     rebuild_title: "reconstruire la liste des entités utilisées par les automatisations, scripts et scènes",
     confirm_reset: "Effacer l'échec de {name} ? Il sera de nouveau signalé au prochain échec.",
     confirm_reset_all: "Effacer toutes les automatisations en échec ? Elles seront de nouveau signalées au prochain échec.",
+    cancel: "Annuler",
     show_more: "Afficher {n} de plus",
     show_less: "Afficher moins",
     just_now: "à l'instant",
@@ -287,14 +289,15 @@ const _excluded = new WeakMap();
  * names, so the YAML can stay readable. Returns a Set of device ids.
  */
 const excludedDevices = (hass, config) => {
-  // Cached on the hass.devices object (replaced only when the device registry changes) and the
-  // exclude_devices value, instead of scanning every device on each update.
+  // Cached on the hass.devices object (replaced only when the device registry changes), one entry
+  // per exclude_devices value, instead of scanning every device on each update. A Map per value, so
+  // two cards with different exclusions on the same dashboard do not evict each other's entry.
+  if (!hass.devices) return computeExcluded(hass, config);
   const key = JSON.stringify(config.exclude_devices ?? null);
-  const cached = hass.devices && _excluded.get(hass.devices);
-  if (cached?.key === key) return cached.ids;
-  const ids = computeExcluded(hass, config);
-  if (hass.devices) _excluded.set(hass.devices, { key, ids });
-  return ids;
+  let byKey = _excluded.get(hass.devices);
+  if (!byKey) _excluded.set(hass.devices, (byKey = new Map()));
+  if (!byKey.has(key)) byKey.set(key, computeExcluded(hass, config));
+  return byKey.get(key);
 };
 
 const computeExcluded = (hass, config) => {
@@ -398,6 +401,25 @@ const BASE_STYLE = `
   .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
   .zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
 `;
+// In-card confirmation popup (Clear / Clear all), as in ha-vacuum-card and ha-system-monitor-card: a
+// backdrop over the card with a small dialog at the top, so it stays in view when the card is long,
+// and follows the card's theme (the native window.confirm does neither).
+const DIALOG_STYLE = `
+  ha-card.dialog-open { position: relative; min-height: 160px; }
+  .backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center;
+              padding-top: 12px; box-sizing: border-box; z-index: 9; border-radius: inherit; }
+  .modal { background: var(--card-background-color, #1c1c1c); color: var(--primary-text-color); width: min(92%, 340px); max-height: calc(100% - 24px);
+           box-sizing: border-box; border-radius: 14px; padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 12px; }
+  .modal .msg { font-size: 14px; line-height: 1.4; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal .btn.primary { background: var(--am-blue); color: #fff; }
+  .modal .btn.primary:hover { background: color-mix(in srgb, var(--am-blue) 85%, #000); }
+`;
+
+// After the confirmation popup closes, clicks on the card are ignored for this long: the second click of a
+// double click on OK would otherwise land on what lies under the button.
+const CONFIRM_GUARD_MS = 400;
+
 // A click inside a dialog (more-info opened from the card, say) is not a click outside the card.
 const inDialog = (ev) => ev.composedPath().some((n) => ["ha-more-info-dialog", "ha-dialog", "dialog"].includes(n.localName));
 
@@ -408,6 +430,12 @@ class AutomationMonitorBase extends HTMLElement {
     this._html = "";
     this._expanded = {};
     this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
+    // Escape closes the confirmation popup (as Cancel). Listened on the window only while it is open.
+    this._onKey = (ev) => {
+      if (ev.key !== "Escape" || !this._confirm) return;
+      ev.stopPropagation();
+      this._closeConfirm();
+    };
     // Keyboard access: Enter or Space on a focusable non-button element acts as a click.
     this.shadowRoot.addEventListener("keydown", (ev) => {
       if ((ev.key === "Enter" || ev.key === " ") && ev.target.getAttribute?.("role") === "button") {
@@ -440,15 +468,20 @@ class AutomationMonitorBase extends HTMLElement {
   }
 
   // Relative times ("5 minutes ago") are refreshed every minute even without a state change: the render
-  // is patched in place, so only their text changes.
+  // is patched in place, so only their text changes. An "All good" card shows no relative time, so the
+  // tick skips the render (signature + full render chain) until a list has items again.
   connectedCallback() {
-    this._timer = setInterval(() => this._update(), 60000);
+    this._timer = setInterval(() => {
+      if (this._showsRelativeTime()) this._update();
+    }, 60000);
     // A click elsewhere on the page folds the lists back to their defaults and shortens them again
     // (as in ha-carburants-france). A click, not a pointerdown: folding on press would shift the
     // layout under the pointer before the click.
     this._onOutside ??= (ev) => {
-      if (!Object.keys(this._folds || {}).length && !Object.keys(this._expanded).length) return;
+      if (!this._confirm && !Object.keys(this._folds || {}).length && !Object.keys(this._expanded).length) return;
       if (ev.composedPath().includes(this) || inDialog(ev)) return;
+      // A click outside the card closes the confirmation popup (as Cancel) before anything else.
+      if (this._confirm) return this._closeConfirm();
       this._folds = {};
       this._expanded = {};
       this._update();
@@ -460,6 +493,17 @@ class AutomationMonitorBase extends HTMLElement {
     clearInterval(this._timer);
     this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);
+    window.removeEventListener("keydown", this._onKey);
+  }
+
+  // True when the card shows at least one relative time: every one of them (subtitle, list items, mini
+  // card lines) comes from a shown failed automation or unavailable linked entity.
+  _showsRelativeTime() {
+    if (!this._hass || !this._config) return false;
+    const data = this._data();
+    if (data.error) return false;
+    const c = this._config;
+    return (c.show_failed !== false && data.failures.length > 0) || (c.show_linked !== false && data.linked.length > 0);
   }
 
   _t(key, vars) {
@@ -497,7 +541,10 @@ class AutomationMonitorBase extends HTMLElement {
   _update(sig) {
     if (!this._hass || !this._config) return;
     this._sig = sig ?? this._signature();
-    const html = this._render();
+    let html = this._render();
+    if (this._confirm) {
+      html = html.replace(/<ha-card>([\s\S]*)<\/ha-card>\s*$/, (_, inner) => `<ha-card class="dialog-open">${inner}${this._confirmHtml()}</ha-card>`);
+    }
     if (html !== this._html) {
       this._html = html;
       morph(this.shadowRoot, html);
@@ -528,6 +575,24 @@ class AutomationMonitorBase extends HTMLElement {
 
   _onClick(ev) {
     const el = ev.composedPath().find((n) => n.dataset && (n.dataset.entity || n.dataset.action || n.dataset.path));
+    // Just closed: the rest of a double click on OK does nothing.
+    if (!this._confirm && Date.now() - (this._confirmClosedAt ?? 0) < CONFIRM_GUARD_MS) {
+      ev.stopPropagation();
+      return;
+    }
+    // Confirmation popup open: only its buttons and the backdrop itself (outside the dialog) act.
+    if (this._confirm) {
+      ev.stopPropagation();
+      const action = el?.dataset.action;
+      if (action === "confirm_ok") {
+        const { data } = this._confirm;
+        this._closeConfirm();
+        this._call(PLATFORM, "reset", data);
+      } else if (action === "confirm_cancel" || (action === "confirm_backdrop" && ev.composedPath()[0] === el)) {
+        this._closeConfirm();
+      }
+      return;
+    }
     if (!el) return;
     ev.stopPropagation();
     const { action, entity, label, path } = el.dataset;
@@ -541,9 +606,9 @@ class AutomationMonitorBase extends HTMLElement {
       return this._update();
     }
     if (action === "reset") {
-      if (window.confirm(this._t("confirm_reset", { name: label }))) this._call(PLATFORM, "reset", { entity_id: entity });
+      this._openConfirm({ data: { entity_id: entity }, text: this._t("confirm_reset", { name: label }), ok: this._t("reset") });
     } else if (action === "reset_all") {
-      if (window.confirm(this._t("confirm_reset_all"))) this._call(PLATFORM, "reset", {});
+      this._openConfirm({ data: {}, text: this._t("confirm_reset_all"), ok: this._t("reset_all") });
     } else if (action === "rebuild") {
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
@@ -554,6 +619,36 @@ class AutomationMonitorBase extends HTMLElement {
     } else if (entity) {
       this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: entity }, bubbles: true, composed: true }));
     }
+  }
+
+  // Confirmation before a Clear / Clear all service call: Cancel (button, Escape, backdrop or a click
+  // outside the card) does nothing.
+  _openConfirm(confirm) {
+    this._confirm = confirm;
+    window.addEventListener("keydown", this._onKey);
+    this._update();
+    // preventScroll: opening the popup must not bring a scrolled page back to the card.
+    this.shadowRoot.querySelector(".modal .primary")?.focus({ preventScroll: true });
+  }
+
+  _closeConfirm() {
+    this._confirm = null;
+    this._confirmClosedAt = Date.now();
+    window.removeEventListener("keydown", this._onKey);
+    this._update();
+  }
+
+  _confirmHtml() {
+    const c = this._confirm;
+    return `<style>${DIALOG_STYLE}</style><div class="backdrop" data-action="confirm_backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="msg">${esc(c.text)}</div>
+        <div class="modal-actions">
+          <button class="btn" data-action="confirm_cancel"><span>${esc(this._t("cancel"))}</span></button>
+          <button class="btn primary" data-action="confirm_ok"><span>${esc(c.ok)}</span></button>
+        </div>
+      </div>
+    </div>`;
   }
 
   // Current data of the integration: lists from the sensor attributes, most recent first.
@@ -609,7 +704,7 @@ class AutomationMonitorBase extends HTMLElement {
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
         </div>
-        <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${status.entity || ""}"><span class="dot"></span>${esc(status.text)}</span>
+        <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${esc(status.entity || "")}"><span class="dot"></span>${esc(status.text)}</span>
         <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
         ${this._zoomButton()}
       </div>`;
@@ -623,7 +718,7 @@ class AutomationMonitorBase extends HTMLElement {
   _counters(data) {
     const c = this._config;
     const counter = (id, icon, n, label, cls) =>
-      `<div class="counter clickable ${n ? cls : "ok"}" role="button" tabindex="0" data-entity="${id || ""}">
+      `<div class="counter clickable ${n ? cls : "ok"}" role="button" tabindex="0" data-entity="${esc(id || "")}">
         <div class="badge">${svgIcon(n ? icon : ICONS.check)}</div>
         <div><div class="n">${n}</div><div class="lbl">${esc(label)}</div></div>
       </div>`;

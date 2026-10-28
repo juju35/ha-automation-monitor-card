@@ -136,7 +136,11 @@ While the entity list rebuilds, the card animates: the Refresh button spins unti
 
 ![refresh animation](screenshots/refreshing.gif)
 
-| Light (lists folded by default) | Dark (French, lists unfolded) |
+A click on a section title folds or unfolds its list, turning the chevron.
+
+![fold animation](screenshots/folding.gif)
+
+| Light (lists folded by default) | Dark (lists unfolded) |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 | ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
@@ -168,7 +172,7 @@ What counts as a failure, the unavailability threshold, the exclusions and the R
 npm install
 npm run build        # bundles src/automation-monitor-card.js + images/ into dist/automation-monitor-card.js
 npm run check        # builds and checks the card (run in CI)
-npm run screenshots  # renders the cards (and refreshing.gif, needs ffmpeg) with mock data into screenshots/
+npm run screenshots  # renders the cards (and the GIFs, needs ffmpeg) with mock data into screenshots/
 ```
 
 `dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where HACS downloads it from.

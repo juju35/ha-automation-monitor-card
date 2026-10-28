@@ -7,6 +7,9 @@ on:
     paths:
       - "src/**"
       - "scripts/**"
+      # The logo is inlined into the build, and package.json pins the playwright used to render.
+      - "images/**"
+      - "package.json"
 
 # Protected main is never pushed to: the job commits the refreshed screenshots
 # back onto the pull request's own branch, so they land through the normal merge.
