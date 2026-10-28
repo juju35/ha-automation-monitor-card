@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { states, entities, allGood } from "./mock-states.mjs";
+import { states, entities, allGood, NOW } from "./mock-states.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/automation-monitor-card.js`, "utf8");
@@ -52,7 +52,7 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 async function openCard(browser, s, { freezeClock = false } = {}) {
   const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
   page.on("pageerror", (err) => console.error(`${s.file}: ${err.message}`));
-  if (freezeClock) await page.clock.install({ time: new Date("2026-10-24T18:44:00Z") });
+  if (freezeClock) await page.clock.install({ time: NOW });
   await page.setContent(page_html(s.theme, s.width));
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });

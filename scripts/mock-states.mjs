@@ -3,7 +3,10 @@
 export const states = {};
 export const entities = {};
 
-const minutesAgo = (m) => new Date(Date.now() - m * 60e3).toISOString();
+// The epoch the mock timestamps are relative to: the page clock is frozen to it for the GIF, so the
+// relative times it shows ("12 minutes ago") stay right whenever the screenshots are generated.
+export const NOW = Date.now();
+const minutesAgo = (m) => new Date(NOW - m * 60e3).toISOString();
 const state = (entity_id, value, attributes = {}) => (states[entity_id] = { entity_id, state: String(value), attributes });
 
 // Automations, scripts and scenes referenced by the sensors (with their editor id).
