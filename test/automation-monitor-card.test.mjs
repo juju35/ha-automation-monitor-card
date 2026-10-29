@@ -2,8 +2,25 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { AutomationMonitorCard, AutomationMonitorMiniCard, resolve, sameSig, esc, editorPath, excludedDevices, STRINGS } = load("automation-monitor-card.js", [
+const {
+  AutomationMonitorCard,
+  AutomationMonitorMiniCard,
+  AutomationMonitorCardEditor,
+  resolve,
+  sameSig,
+  esc,
+  editorPath,
+  excludedDevices,
+  rtfFor,
+  DIALOG_STYLE,
+  STRINGS,
+  window: win,
+} = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
+  "AutomationMonitorCardEditor",
+  "rtfFor",
+  "DIALOG_STYLE",
+  "window",
   "AutomationMonitorMiniCard",
   "resolve",
   "sameSig",
@@ -262,4 +279,100 @@ test("I18N parity: every language has exactly the English keys and placeholders"
     assert.deepEqual(Object.keys(STRINGS[l]).sort(), keys, l);
     for (const k of keys) assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k]), `${l}.${k}`);
   }
+});
+
+test("the confirmation popup OK button is not a filled button", () => {
+  const rule = DIALOG_STYLE.match(/\.modal \.btn\.primary \{([^}]*)\}/)[1];
+  assert.match(rule, /color: var\(--am-blue\)/);
+  assert.doesNotMatch(rule, /#fff|background: var\(--am-blue\)/);
+});
+
+test("the signature does not format relative times and the render reuses its data", () => {
+  // One RelativeTimeFormat per language.
+  assert.equal(rtfFor("fr"), rtfFor("fr"));
+  const el = card(baseStates());
+  let formats = 0;
+  const realAgo = el._lastFailure;
+  el._lastFailure = (d) => (formats++, realAgo.call(el, d));
+  el._signature();
+  assert.equal(formats, 0);
+  // Same hass and configuration: the filtered and sorted lists are computed once.
+  assert.equal(el._data(), el._data());
+  el._hass = { ...el._hass };
+  assert.notEqual(el._dataMemo.hass, el._hass);
+  // A failure without a valid date: the subtitle falls back to the automation count, which the signature follows.
+  const bad = baseStates();
+  bad["sensor.failed"] = { ...bad["sensor.failed"], attributes: { automations: [{ ...failure, last_error_time: "?" }] } };
+  const before = card(bad)._signature();
+  const more = { ...bad, "automation.b": { entity_id: "automation.b", state: "on", attributes: {} } };
+  assert.ok(!sameSig(before, card(more)._signature()));
+});
+
+test("Escape is listened in the capture phase while the popup is open, and the focus returns to Clear", () => {
+  const added = [];
+  const removed = [];
+  const add = win.addEventListener;
+  const remove = win.removeEventListener;
+  win.addEventListener = (...a) => added.push(a);
+  win.removeEventListener = (...a) => removed.push(a);
+  try {
+    const el = card(baseStates());
+    el._update = () => {};
+    let focused = 0;
+    const opener = { dataset: { action: "reset", entity: "automation.a", label: "A" }, isConnected: true, focus: () => focused++ };
+    el._onClick(click([opener]));
+    assert.equal(added.length, 1);
+    assert.equal(added[0][0], "keydown");
+    assert.equal(added[0][2], true);
+    let stopped = false;
+    el._onKey({ key: "Escape", stopPropagation: () => (stopped = true) });
+    assert.ok(stopped);
+    assert.equal(el._confirm, null);
+    assert.deepEqual(removed[0], added[0]);
+    assert.equal(focused, 1);
+    // Closed by a click elsewhere on the page: the focus stays there.
+    el._confirmClosedAt = 0;
+    el.connectedCallback();
+    el._onClick(click([opener]));
+    el._onOutside(click([node("div"), node("body")]));
+    assert.equal(focused, 1);
+    el.disconnectedCallback();
+  } finally {
+    win.addEventListener = add;
+    win.removeEventListener = remove;
+  }
+});
+
+test("a click outside a zoomed mini card with the popup open only closes the popup", () => {
+  const el = zoomCard();
+  el.connectedCallback();
+  el._zoomClick(zoomButton());
+  assert.equal(el._zoomed, true);
+  el._onClick(click([{ dataset: { action: "reset_all" } }]));
+  assert.ok(el._confirm);
+  const outside = click([node("div"), node("body")]);
+  el._onOutside(outside);
+  el._onUnzoom(outside);
+  assert.equal(el._confirm, null);
+  assert.equal(el._zoomed, true);
+  // The next click outside brings the compact view back.
+  el._onUnzoom(click([node("div"), node("body")]));
+  assert.equal(el._zoomed, false);
+  el.disconnectedCallback();
+});
+
+test("the editor gives ha-form a new schema only when the language changes", () => {
+  const ed = new AutomationMonitorCardEditor();
+  ed.setConfig({ type: "custom:automation-monitor-card" });
+  const hass = { states: {}, language: "en" };
+  ed.hass = hass;
+  const { schema, data } = ed._form;
+  ed.hass = { ...hass, states: { "light.a": {} } };
+  assert.equal(ed._form.schema, schema);
+  assert.equal(ed._form.data, data);
+  ed.hass = { ...hass, language: "de" };
+  assert.notEqual(ed._form.schema, schema);
+  ed.setConfig({ type: "custom:automation-monitor-card", max_items: 3 });
+  assert.notEqual(ed._form.data, data);
+  assert.equal(ed._form.data.max_items, 3);
 });

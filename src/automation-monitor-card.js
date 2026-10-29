@@ -136,27 +136,27 @@ const STRINGS = {
     lang_auto: "Automatique",
   },
   de: {
-    failed_automations: "Fehlgeschlagene Automationen",
+    failed_automations: "Fehlgeschlagene Automatisierungen",
     linked_unavailable: "Nicht verfügbare verknüpfte Entitäten",
     failed_short: "Fehlgeschlagen",
     linked_short: "Nicht verfügbar",
     all_ok: "Alles in Ordnung",
     one_problem: "1 Problem",
     n_problems: "{n} Probleme",
-    automations: "{n} Automationen",
+    automations: "{n} Automatisierungen",
     last_failure: "Letzter Fehler {when}",
     step: "Schritt",
     streak: "{n} Fehler in Folge",
-    unavailable_since: "Nicht verfügbar {when}",
+    unavailable_since: "{when} ausgefallen",
     used_by: "Verwendet von",
     trace: "Trace",
     edit: "Bearbeiten",
     reset: "Löschen",
     reset_all: "Alle löschen",
     rebuild: "Aktualisieren",
-    rebuild_title: "Liste der von Automationen, Skripten und Szenen verwendeten Entitäten neu erstellen",
+    rebuild_title: "Liste der von Automatisierungen, Skripten und Szenen verwendeten Entitäten neu erstellen",
     confirm_reset: "Fehler von {name} löschen? Er wird beim nächsten Fehlschlag erneut gemeldet.",
-    confirm_reset_all: "Alle fehlgeschlagenen Automationen löschen? Sie werden beim nächsten Fehlschlag erneut gemeldet.",
+    confirm_reset_all: "Alle fehlgeschlagenen Automatisierungen löschen? Sie werden beim nächsten Fehlschlag erneut gemeldet.",
     cancel: "Abbrechen",
     show_more: "{n} weitere anzeigen",
     show_less: "Weniger anzeigen",
@@ -169,9 +169,9 @@ const STRINGS = {
     // Editor
     title: "Titel (optional)",
     show_logo: "Automation-Monitor-Logo anzeigen",
-    show_failed: "Fehlgeschlagene Automationen anzeigen",
+    show_failed: "Fehlgeschlagene Automatisierungen anzeigen",
     show_linked: "Nicht verfügbare verknüpfte Entitäten anzeigen",
-    expand_failed: "Fehlgeschlagene Automationen standardmäßig aufgeklappt",
+    expand_failed: "Fehlgeschlagene Automatisierungen standardmäßig aufgeklappt",
     expand_linked: "Nicht verfügbare verknüpfte Entitäten standardmäßig aufgeklappt",
     show_controls: "Löschen-Schaltflächen anzeigen",
     show_details: "Fehlerdetails anzeigen",
@@ -248,13 +248,20 @@ const t = (hass, config, key, vars = {}) =>
 
 const valid = (s) => s && !["unknown", "unavailable", ""].includes(s.state);
 
+// One RelativeTimeFormat per language, instead of a new one for every relative time of every render.
+const _rtf = new Map();
+const rtfFor = (l) => {
+  if (!_rtf.has(l)) _rtf.set(l, new Intl.RelativeTimeFormat(l, { numeric: "auto" }));
+  return _rtf.get(l);
+};
+
 const ago = (hass, config, iso) => {
   const d = Date.parse(iso);
   if (!Number.isFinite(d)) return null;
   const diff = (d - Date.now()) / 1000;
   const abs = Math.abs(diff);
   if (abs < 60) return t(hass, config, "just_now");
-  const rtf = new Intl.RelativeTimeFormat(lang(hass, config), { numeric: "auto" });
+  const rtf = rtfFor(lang(hass, config));
   if (abs < 3600) return rtf.format(Math.round(diff / 60), "minute");
   if (abs < 86400) return rtf.format(Math.round(diff / 3600), "hour");
   return rtf.format(Math.round(diff / 86400), "day");
@@ -506,8 +513,9 @@ const DIALOG_STYLE = `
            box-sizing: border-box; border-radius: 14px; padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 12px; }
   .modal .msg { font-size: 14px; line-height: 1.4; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
-  .modal .btn.primary { background: var(--am-blue); color: #fff; }
-  .modal .btn.primary:hover { background: color-mix(in srgb, var(--am-blue) 85%, #000); }
+  /* No filled button: the smoked .btn background tinted with the accent colour, accent text. */
+  .modal .btn.primary { color: var(--am-blue); background: color-mix(in srgb, var(--am-blue) 16%, var(--secondary-background-color, rgba(127,127,127,.12))); }
+  .modal .btn.primary:hover { background: color-mix(in srgb, var(--am-blue) 26%, var(--secondary-background-color, rgba(127,127,127,.12))); }
 `;
 
 // After the confirmation popup closes, clicks on the card are ignored for this long: the second click of a
@@ -524,7 +532,8 @@ class AutomationMonitorBase extends HTMLElement {
     this._html = "";
     this._expanded = {};
     this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
-    // Escape closes the confirmation popup (as Cancel). Listened on the window only while it is open.
+    // Escape closes the confirmation popup (as Cancel). Listened on the window, in the capture phase so a
+    // dialog around the card (the card editor preview) does not get it first and close too, only while open.
     this._onKey = (ev) => {
       if (ev.key !== "Escape" || !this._confirm) return;
       ev.stopPropagation();
@@ -574,8 +583,13 @@ class AutomationMonitorBase extends HTMLElement {
     this._onOutside ??= (ev) => {
       if (!this._confirm && !Object.keys(this._folds || {}).length && !Object.keys(this._expanded).length) return;
       if (ev.composedPath().includes(this) || inDialog(ev)) return;
-      // A click outside the card closes the confirmation popup (as Cancel) before anything else.
-      if (this._confirm) return this._closeConfirm();
+      // A click outside the card closes the confirmation popup (as Cancel) before anything else: the event
+      // is remembered so the mini card does not also leave its zoomed view on that same click. The focus
+      // stays where the user clicked.
+      if (this._confirm) {
+        this._confirmCloseEvent = ev;
+        return this._closeConfirm(false);
+      }
       this._folds = {};
       this._expanded = {};
       this._update();
@@ -587,7 +601,7 @@ class AutomationMonitorBase extends HTMLElement {
     clearInterval(this._timer);
     this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);
-    window.removeEventListener("keydown", this._onKey);
+    window.removeEventListener("keydown", this._onKey, true);
   }
 
   // True when the card shows at least one relative time: every one of them (subtitle, list items, mini
@@ -627,7 +641,7 @@ class AutomationMonitorBase extends HTMLElement {
     }
     if (!this._compact) {
       const data = this._data();
-      if (!data.error && !this._lastFailure(data)) sig.push(automationCount(h));
+      if (!data.error && !this._hasLastFailure(data)) sig.push(automationCount(h));
     }
     return sig;
   }
@@ -700,9 +714,9 @@ class AutomationMonitorBase extends HTMLElement {
       return this._update();
     }
     if (action === "reset") {
-      this._openConfirm({ data: { entity_id: entity }, text: this._t("confirm_reset", { name: label }), ok: this._t("reset") });
+      this._openConfirm({ data: { entity_id: entity }, text: this._t("confirm_reset", { name: label }), ok: this._t("reset"), opener: el });
     } else if (action === "reset_all") {
-      this._openConfirm({ data: {}, text: this._t("confirm_reset_all"), ok: this._t("reset_all") });
+      this._openConfirm({ data: {}, text: this._t("confirm_reset_all"), ok: this._t("reset_all"), opener: el });
     } else if (action === "rebuild") {
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
@@ -719,17 +733,21 @@ class AutomationMonitorBase extends HTMLElement {
   // outside the card) does nothing.
   _openConfirm(confirm) {
     this._confirm = confirm;
-    window.addEventListener("keydown", this._onKey);
+    window.addEventListener("keydown", this._onKey, true);
     this._update();
     // preventScroll: opening the popup must not bring a scrolled page back to the card.
     this.shadowRoot.querySelector(".modal .primary")?.focus({ preventScroll: true });
   }
 
-  _closeConfirm() {
+  // The focus goes back to the Clear button that opened the popup (its OK button leaves the DOM), unless
+  // the popup was closed by a click elsewhere on the page.
+  _closeConfirm(restoreFocus = true) {
+    const opener = this._confirm?.opener;
     this._confirm = null;
     this._confirmClosedAt = Date.now();
-    window.removeEventListener("keydown", this._onKey);
+    window.removeEventListener("keydown", this._onKey, true);
     this._update();
+    if (restoreFocus && opener?.isConnected) opener.focus({ preventScroll: true });
   }
 
   _confirmHtml() {
@@ -745,8 +763,18 @@ class AutomationMonitorBase extends HTMLElement {
     </div>`;
   }
 
-  // Current data of the integration: lists from the sensor attributes, most recent first.
+  // Current data of the integration, computed once per hass object and configuration: the signature
+  // (on every state change) and the render that follows it share the same filtered and sorted lists.
   _data() {
+    const memo = this._dataMemo;
+    if (memo && memo.hass === this._hass && memo.config === this._config) return memo.data;
+    const data = this._computeData();
+    this._dataMemo = { hass: this._hass, config: this._config, data };
+    return data;
+  }
+
+  // Lists from the sensor attributes, most recent first.
+  _computeData() {
     const found = findSensors(this._hass, this._config);
     if (found.error) return found;
     const f = this._s(found.failed);
@@ -769,10 +797,15 @@ class AutomationMonitorBase extends HTMLElement {
     return { cls: nf ? "crit" : "warn", text: n === 1 ? this._t("one_problem") : this._t("n_problems", { n }), entity: nf ? data.failedId : data.linkedId };
   }
 
+  // True when the subtitle shows the time of the most recent failure (the signature only needs to know
+  // that, not the formatted text).
+  _hasLastFailure(data) {
+    return this._config.show_failed !== false && data.failures.length > 0 && Number.isFinite(Date.parse(data.failures[0].last_error_time));
+  }
+
   // Relative time of the most recent failure shown in the subtitle, or "".
   _lastFailure(data) {
-    const last = this._config.show_failed !== false && data.failures[0];
-    return (last && ago(this._hass, this._config, last.last_error_time)) || "";
+    return this._hasLastFailure(data) ? ago(this._hass, this._config, data.failures[0].last_error_time) : "";
   }
 
   _sub(data) {
@@ -1042,6 +1075,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorCard {
     this.shadowRoot.addEventListener("click", (ev) => this._zoomClick(ev));
     // A click outside the card, and not in a dialog opened from it, brings it back to the compact view.
     this._onUnzoom = (ev) => {
+      if (ev === this._confirmCloseEvent) return;
       if (this._zoomed && !ev.composedPath().includes(this) && !inDialog(ev)) this._setZoom(false);
     };
   }
@@ -1196,12 +1230,21 @@ class AutomationMonitorEditorBase extends HTMLElement {
       });
       this.appendChild(this._form);
     }
-    const data = { ...this._config };
-    for (const [name, def] of toggles) if (data[name] === undefined) data[name] = def;
-    if (this.constructor.extraFields(() => "").some((f) => f.name === "max_items") && data.max_items === undefined) data.max_items = DEFAULT_MAX_ITEMS;
     this._form.hass = this._hass;
-    this._form.data = data;
-    this._form.schema = this._schema();
+    // New data or schema objects make ha-form render again: only give them when the configuration or the
+    // language has changed, not on every state change of Home Assistant while the editor is open.
+    if (this._formConfig !== this._config) {
+      this._formConfig = this._config;
+      const data = { ...this._config };
+      for (const [name, def] of toggles) if (data[name] === undefined) data[name] = def;
+      if (this.constructor.extraFields(() => "").some((f) => f.name === "max_items") && data.max_items === undefined) data.max_items = DEFAULT_MAX_ITEMS;
+      this._form.data = data;
+    }
+    const l = lang(this._hass, this._config);
+    if (this._formLang !== l) {
+      this._formLang = l;
+      this._form.schema = this._schema();
+    }
   }
 }
 

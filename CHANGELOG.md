@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.14.1 - 2026-10-29
+
+### Fixes
+- The OK button of the Clear confirmation popup is no longer a filled button: it keeps the card's button background, tinted with the accent colour.
+- Escape now closes only the confirmation popup, not the card editor dialog around the preview.
+- On a zoomed mini card, a click outside with the confirmation popup open only closes the popup, without going back to the compact view.
+- After the confirmation popup closes (OK, Cancel or Escape), the keyboard focus returns to the Clear button that opened it.
+- German: "Automatisierungen" (Home Assistant's term) instead of "Automationen", and "vor 5 Minuten ausgefallen" for unavailable entities.
+
+### Maintenance
+- Lighter updates: the card no longer formats relative times or filters the lists twice on each Home Assistant state change, and the visual editor no longer re-renders its form on every state change.
+- Screenshots workflow: fork-safe checkout, per-PR concurrency, also run on a playwright bump of the lock; Chromium system deps fail explicitly after 3 attempts in CI.
+- Screenshots workflow: after pushing refreshed screenshots, it re-runs Lint, Validate and HACS Validation on that commit (a GITHUB_TOKEN push does not trigger them); Lint can now also be run manually.
+
 ## 1.14.0 - 2026-10-28
 
 ### Changes

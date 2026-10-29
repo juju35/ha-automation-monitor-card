@@ -1,6 +1,6 @@
 {
   "name": "ha-automation-monitor-card",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "description": "Lovelace cards for Home Assistant showing the failed automations and unavailable linked entities reported by the Automation Monitor integration.",
   "private": true,
   "type": "module",
@@ -12,6 +12,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "playwright": "^1.56.1"
+    "playwright": "^1.64.1"
   }
 }
