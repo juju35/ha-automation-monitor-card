@@ -595,6 +595,9 @@ class AutomationMonitorBase extends HTMLElement {
       this._update();
     };
     document.addEventListener("click", this._onOutside, true);
+    // A confirmation popup still open when the card is attached again (Lovelace keeps the card of a view
+    // that is left and attaches it again on return) keeps closing on Escape.
+    if (this._confirm) window.addEventListener("keydown", this._onKey, true);
   }
 
   disconnectedCallback() {
@@ -1179,6 +1182,17 @@ class AutomationMonitorEditorBase extends HTMLElement {
 
   setConfig(config) {
     this._config = { ...config };
+    // Former options: collapse_<list>: false (still honoured by the card) becomes expand_<list>: true, and
+    // collapse_<list> is dropped, so the "expanded by default" toggle shows the list state and acts on it.
+    let migrated = false;
+    for (const key of ["failed", "linked"]) {
+      const collapse = `collapse_${key}`;
+      if (!(collapse in this._config) || !this.constructor.toggles.some(([name]) => name === `expand_${key}`)) continue;
+      if (this._config[collapse] === false) this._config[`expand_${key}`] = true;
+      delete this._config[collapse];
+      migrated = true;
+    }
+    if (migrated) this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: { ...this._config } }, bubbles: true, composed: true }));
     this._render();
   }
 

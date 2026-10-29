@@ -22,7 +22,12 @@ export const load = (file, names) => {
     window: { addEventListener() {}, removeEventListener() {} },
     document: { addEventListener() {}, removeEventListener() {}, createElement: () => ({ addEventListener() {} }) },
     console: { info() {}, error() {}, log() {} },
-    CustomEvent: class {},
+    CustomEvent: class {
+      constructor(type, init) {
+        this.type = type;
+        this.detail = init?.detail;
+      }
+    },
     Intl,
     Date,
     setTimeout,
