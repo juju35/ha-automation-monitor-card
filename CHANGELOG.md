@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.2 - 2026-10-29
+
+### Fixes
+- The Clear confirmation popup still closes on Escape after leaving the Lovelace view and coming back while it was open.
+- Visual editor: the former `collapse_failed: false` / `collapse_linked: false` options are turned into `expand_failed: true` / `expand_linked: true`, so the "expanded by default" toggles show the real state of the lists and turning them off folds the lists again.
+
 ## 1.14.1 - 2026-10-29
 
 ### Fixes
