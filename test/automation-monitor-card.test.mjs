@@ -376,3 +376,60 @@ test("the editor gives ha-form a new schema only when the language changes", () 
   assert.notEqual(ed._form.data, data);
   assert.equal(ed._form.data.max_items, 3);
 });
+
+test("a popup still open when the card is attached again keeps closing on Escape", () => {
+  const listeners = new Set();
+  const add = win.addEventListener;
+  const remove = win.removeEventListener;
+  win.addEventListener = (type, fn, capture) => listeners.add(`${type}|${capture}|${fn === el._onKey}`);
+  win.removeEventListener = (type, fn, capture) => listeners.delete(`${type}|${capture}|${fn === el._onKey}`);
+  const el = card(baseStates());
+  try {
+    el._update = () => {};
+    el.connectedCallback();
+    el._onClick(click([{ dataset: { action: "reset", entity: "automation.a", label: "A" } }]));
+    assert.ok(listeners.has("keydown|true|true"));
+    // Lovelace view change: the card is detached, cached, then attached again with the popup still open.
+    el.disconnectedCallback();
+    assert.ok(el._confirm);
+    el.connectedCallback();
+    assert.ok(listeners.has("keydown|true|true"));
+    el._onKey({ key: "Escape", stopPropagation() {} });
+    assert.equal(el._confirm, null);
+    assert.ok(!listeners.has("keydown|true|true"));
+    // Attached again with no popup open: no keydown listener is added.
+    el.disconnectedCallback();
+    el.connectedCallback();
+    assert.ok(!listeners.has("keydown|true|true"));
+  } finally {
+    el.disconnectedCallback();
+    win.addEventListener = add;
+    win.removeEventListener = remove;
+  }
+});
+
+test("the editor turns the former collapse_<list>: false option into expand_<list>: true", () => {
+  const ed = new AutomationMonitorCardEditor();
+  const events = [];
+  ed.dispatchEvent = (ev) => events.push(ev);
+  ed.setConfig({ type: "custom:automation-monitor-card", collapse_failed: false, collapse_linked: true, max_items: 3 });
+  assert.deepEqual({ ...ed._config }, { type: "custom:automation-monitor-card", expand_failed: true, max_items: 3 });
+  assert.equal(events.length, 1);
+  assert.deepEqual({ ...events[0].detail.config }, { ...ed._config });
+  // The migrated configuration given back by Home Assistant (or a configuration without the former
+  // options) is kept as is, without a new config-changed event.
+  ed.setConfig({ ...events[0].detail.config });
+  ed.setConfig({ type: "custom:automation-monitor-card", expand_linked: true });
+  assert.equal(events.length, 1);
+  assert.deepEqual({ ...ed._config }, { type: "custom:automation-monitor-card", expand_linked: true });
+});
+
+test("the mini card editor, without list toggles, leaves the collapse_<list> options alone", () => {
+  const { AutomationMonitorMiniCardEditor } = load("automation-monitor-card.js", ["AutomationMonitorMiniCardEditor"]);
+  const ed = new AutomationMonitorMiniCardEditor();
+  const events = [];
+  ed.dispatchEvent = (ev) => events.push(ev);
+  ed.setConfig({ type: "custom:automation-monitor-mini-card", collapse_failed: false });
+  assert.equal(events.length, 0);
+  assert.equal(ed._config.collapse_failed, false);
+});
