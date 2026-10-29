@@ -12,6 +12,7 @@
 ### Maintenance
 - Lighter updates: the card no longer formats relative times or filters the lists twice on each Home Assistant state change, and the visual editor no longer re-renders its form on every state change.
 - Screenshots workflow: fork-safe checkout, per-PR concurrency, also run on a playwright bump of the lock; Chromium system deps fail explicitly after 3 attempts in CI.
+- Screenshots workflow: after pushing refreshed screenshots, it re-runs Lint, Validate and HACS Validation on that commit (a GITHUB_TOKEN push does not trigger them); Lint can now also be run manually.
 
 ## 1.14.0 - 2026-10-28
 
