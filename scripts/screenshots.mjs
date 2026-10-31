@@ -79,11 +79,14 @@ async function openCard(browser, s, { freezeClock = false } = {}) {
 const shots = [
   { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
   { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
+  { file: "card-open-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
+  { file: "card-ok-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
   { file: "mini-card-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {} },
   { file: "mini-card-ok", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {}, overrides: allGood },
+  { file: "mini-card-ok-dark", type: "automation-monitor-mini-card", theme: "dark", width: 380, config: {}, overrides: allGood },
   { file: "mini-card-zoom", type: "automation-monitor-mini-card", theme: "light", width: 460, config: {}, zoom: true },
   { file: "mini-card-zoom-dark", type: "automation-monitor-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];

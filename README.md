@@ -148,13 +148,16 @@ A click on a section title folds or unfolds its list, turning the chevron.
 
 Lists unfolded:
 
-![card unfolded](screenshots/card-open.png)
-
-When everything works:
-
-| Automation Monitor Card | Automation Monitor Mini Card |
+| Light | Dark |
 |---|---|
-| ![card ok](screenshots/card-ok.png) | ![mini card ok](screenshots/mini-card-ok.png) |
+| ![card unfolded](screenshots/card-open.png) | ![card unfolded dark](screenshots/card-open-dark.png) |
+
+When everything works (Automation Monitor Card, then Automation Monitor Mini Card):
+
+| Light | Dark |
+|---|---|
+| ![card ok](screenshots/card-ok.png) | ![card ok dark](screenshots/card-ok-dark.png) |
+| ![mini card ok](screenshots/mini-card-ok.png) | ![mini card ok dark](screenshots/mini-card-ok-dark.png) |
 
 ## How it works
 
