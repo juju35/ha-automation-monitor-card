@@ -134,11 +134,15 @@ language: fr
 
 While the entity list rebuilds, the card animates: the Refresh button spins until the scan finishes. It settles to a still card once done.
 
-![refresh animation](screenshots/refreshing.gif)
+| Light | Dark |
+|---|---|
+| ![refresh animation](screenshots/refreshing.gif) | ![refresh animation dark](screenshots/refreshing-dark.gif) |
 
 A click on a section title folds or unfolds its list, turning the chevron.
 
-![fold animation](screenshots/folding.gif)
+| Light | Dark |
+|---|---|
+| ![fold animation](screenshots/folding.gif) | ![fold animation dark](screenshots/folding-dark.gif) |
 
 | Light (lists folded by default) | Dark (lists folded by default) |
 |---|---|
