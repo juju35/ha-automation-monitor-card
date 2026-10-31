@@ -76,11 +76,12 @@ async function openCard(browser, s, { freezeClock = false } = {}) {
   return page;
 }
 
+// Every X / X-dark pair shares its config, overrides, clicks, zoom and width: only the theme differs.
 const shots = [
   { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {} },
   { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-open-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
   { file: "card-ok-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },
@@ -113,8 +114,15 @@ for (const s of shots) {
 
 // The Refresh button spinning while the entity list rebuilds, recorded as a looping GIF — needs ffmpeg on PATH. The
 // clock is frozen so the transient spin holds; every animation is paused and stepped frame by frame, so the GIF is
-// identical whatever the machine's speed.
-const gif = { file: "refreshing", type: "automation-monitor-card", theme: "light", width: 460, config: {} };
+// identical whatever the machine's speed. Each GIF is rendered once per theme (X.gif light, X-dark.gif dark), with
+// the same setup.
+const gifShot = (file, theme) => ({
+  file: theme === "dark" ? `${file}-dark` : file,
+  type: "automation-monitor-card",
+  theme,
+  width: 460,
+  config: {},
+});
 const FPS = 20;
 const SECONDS = 2;
 
@@ -129,7 +137,7 @@ const encodeGif = (dir, file, width) => {
   rmSync(dir, { recursive: true });
   console.log(`screenshots/${file}.gif`);
 };
-{
+async function recordRefreshing(gif) {
   const page = await openCard(browser, gif, { freezeClock: true });
   await page.evaluate(() =>
     document
@@ -157,8 +165,7 @@ const encodeGif = (dir, file, width) => {
 
 // The other animation of the card: a click on a section title folds or unfolds its list, turning the
 // chevron (.2s transition). The transitions are paused and stepped frame by frame like the spin above.
-const fold = { file: "folding", type: "automation-monitor-card", theme: "light", width: 460, config: {} };
-{
+async function recordFolding(fold) {
   const page = await openCard(browser, fold, { freezeClock: true });
   const click = (sel) =>
     page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);
@@ -203,5 +210,9 @@ const fold = { file: "folding", type: "automation-monitor-card", theme: "light",
   await hold(10); // folded again
   await page.close();
   encodeGif(dir, fold.file, clip.width);
+}
+for (const theme of ["light", "dark"]) {
+  await recordRefreshing(gifShot("refreshing", theme));
+  await recordFolding(gifShot("folding", theme));
 }
 await browser.close();
