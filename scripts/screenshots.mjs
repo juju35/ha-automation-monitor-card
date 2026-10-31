@@ -76,11 +76,12 @@ async function openCard(browser, s, { freezeClock = false } = {}) {
   return page;
 }
 
+// Every X / X-dark pair shares its config, overrides, clicks, zoom and width: only the theme differs.
 const shots = [
   { file: "card", type: "automation-monitor-card", theme: "light", width: 460, config: {} },
+  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {} },
   { file: "card-open", type: "automation-monitor-card", theme: "light", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-open-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
-  { file: "card-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, clicks: ['[data-section="failed"]', '[data-section="linked"]'] },
   { file: "card-ok", type: "automation-monitor-card", theme: "light", width: 460, config: {}, overrides: allGood },
   { file: "card-ok-dark", type: "automation-monitor-card", theme: "dark", width: 460, config: {}, overrides: allGood },
   { file: "mini-card", type: "automation-monitor-mini-card", theme: "light", width: 380, config: {} },

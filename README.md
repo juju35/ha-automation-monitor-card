@@ -140,7 +140,7 @@ A click on a section title folds or unfolds its list, turning the chevron.
 
 ![fold animation](screenshots/folding.gif)
 
-| Light (lists folded by default) | Dark (lists unfolded) |
+| Light (lists folded by default) | Dark (lists folded by default) |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 | ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
