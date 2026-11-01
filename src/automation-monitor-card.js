@@ -792,6 +792,11 @@ const BASE_STYLE = `
   :host { --am-blue: #1db6ec; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa600);
           --am-crit: var(--error-color, #db4437);
           --am-blue-text: color-mix(in srgb, var(--am-blue) 40%, var(--primary-text-color, #212121)); }
+  /* A block host: its width (watched by a ResizeObserver, see _observeWidth) sets the narrow / tiny / phone
+     attributes below. No CSS size container: its size containment drops the card to ~24 px in a container that
+     sizes it by its content (layout-card, button-card, an inline-block, a flex row). min-width: 0 lets a grid or
+     flex layout (a 1fr column) make the card narrower than its longest unbreakable text. */
+  :host { display: block; min-width: 0; }
   ha-card { overflow: hidden; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
@@ -802,17 +807,17 @@ const BASE_STYLE = `
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent);
-          color: color-mix(in srgb, var(--c, var(--am-ok)) 50%, var(--primary-text-color, #212121)); flex: 0 1 auto; min-width: 0; max-width: 50%; }
+          color: color-mix(in srgb, var(--c, var(--am-ok)) 50%, var(--primary-text-color, #212121)); flex: 0 1 auto; min-width: 0; }
+  /* The chip keeps its whole label and only truncates when the title is down to its minimum width. */
   .chip .txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  /* The header and the content are size containers: narrow cards (Sections view at 6 columns, the mini card's
-     default size) shorten the chip, the section buttons and the counters by their own width. */
-  .header, .content { container-type: inline-size; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
-  /* Narrow header: the chip shows only its dot (its text stays in title and aria-label), so the title stays readable. */
-  @container (max-width: 339px) {
-    .chip .txt { display: none; }
-    .chip { padding: 4px; }
-  }
+  /* Below 245 px (6 columns of the Sections view on a phone) the chip shows only its dot (its text stays in title
+     and aria-label) and the header gaps narrow; below 200 px the logo goes too, so the title stays readable and the
+     buttons stay in the card. */
+  :host([tiny]) .chip .txt { display: none; }
+  :host([tiny]) .chip { padding: 4px; }
+  :host([tiny]) .header { gap: 6px; }
+  :host([phone]) .logo-link { display: none; }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
@@ -826,7 +831,7 @@ const BASE_STYLE = `
     .section-title .chevron { transition: none; }
   }
   /* The title block takes the room left, truncates, and keeps a few characters whatever the chip and buttons need. */
-  .titles { flex: 1 1 auto; min-width: 6ch; }
+  .titles { flex: 1 1 0; min-width: 5ch; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* As ha-alert: theme text colour, warning colour on the left border and a light tint. */
@@ -847,10 +852,9 @@ const BASE_STYLE = `
   .counter .n { font-size: 20px; font-weight: 500; line-height: 1.1; }
   .counter.crit .n, .counter.warn .n { color: color-mix(in srgb, var(--c) 50%, var(--primary-text-color, #212121)); }
   .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; overflow-wrap: anywhere; }
-  /* Narrow card: one counter per row, so long labels (Automatisierungen, automatiseringen…) fit their counter. */
-  @container (max-width: 359px) {
-    .counters { grid-template-columns: minmax(0, 1fr); }
-  }
+  /* Narrow card (below 384 px): one counter per row, so long labels (Automatisierungen, automatiseringen…) fit
+     their counter. */
+  :host([narrow]) .counters { grid-template-columns: minmax(0, 1fr); }
   .counter > div:last-child { min-width: 0; }
   .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0;
           border-radius: 50%; display: grid; place-items: center; color: var(--secondary-text-color); }
@@ -930,6 +934,7 @@ class AutomationMonitorBase extends HTMLElement {
   // is patched in place, so only their text changes. An "All good" card shows no relative time, so the
   // tick skips the render (signature + full render chain) until a list has items again.
   connectedCallback() {
+    this._observeWidth();
     this._timer = setInterval(() => {
       if (this._showsRelativeTime()) this._update();
     }, 60000);
@@ -956,7 +961,22 @@ class AutomationMonitorBase extends HTMLElement {
     if (this._confirm) window.addEventListener("keydown", this._onKey, true);
   }
 
+  // The card's width sets the host attributes the styles adapt to (no CSS size container, see :host above):
+  // narrow below 384 px, tiny below 245 px, phone below 200 px. The observer runs after layout and before paint.
+  _observeWidth() {
+    if (typeof ResizeObserver === "undefined") return;
+    this._ro ??= new ResizeObserver((entries) => {
+      const w = entries[entries.length - 1].contentRect.width;
+      if (!w) return;
+      this.toggleAttribute("narrow", w < 384);
+      this.toggleAttribute("tiny", w < 245);
+      this.toggleAttribute("phone", w < 200);
+    });
+    this._ro.observe(this);
+  }
+
   disconnectedCallback() {
+    this._ro?.disconnect();
     clearInterval(this._timer);
     this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);
@@ -1250,11 +1270,9 @@ const FULL_STYLE = `
   .section-title .label { min-width: 0; overflow-wrap: anywhere; }
   .section-title .count { text-transform: none; letter-spacing: 0; font-weight: 400; flex: none; }
   .section-title .btn { text-transform: none; letter-spacing: 0; flex: none; }
-  /* Narrow card: the Clear all button shows only its icon (its text stays in title and aria-label). */
-  @container (max-width: 359px) {
-    .section-title .btn > span { display: none; }
-    .section-title .btn { padding: 4px 6px; }
-  }
+  /* Narrow card (below 384 px): the Clear all button shows only its icon (its text stays in title and aria-label). */
+  :host([narrow]) .section-title .btn > span { display: none; }
+  :host([narrow]) .section-title .btn { padding: 4px 6px; }
   .section-title.fold { cursor: pointer; user-select: none; }
   .section-title .chevron { transition: transform .2s ease; }
   .section-title.closed { margin-bottom: 0; }
@@ -1505,7 +1523,7 @@ class AutomationMonitorMiniCard extends AutomationMonitorCard {
     ev.stopPropagation();
     this._setZoom(!this._zoomed);
     // Keyboard use (Enter / Space: no click count) keeps the focus on the button.
-    if (ev.detail === 0) this.shadowRoot.querySelector(".zoom")?.focus();
+    if (ev.detail === 0) this.shadowRoot.querySelector(".zoom")?.focus({ preventScroll: true });
   }
 
   _zoomButton() {

@@ -130,3 +130,46 @@ test("section toggle: Enter and Space fold the list and keep the focus, Clear al
   await page.close();
   assert.deepEqual(errors, []);
 });
+
+// The focus given back after a re-render never scrolls the page: every focus() of the card passes preventScroll.
+test("every focus() call of the card passes preventScroll: true", () => {
+  const calls = src.match(/\.focus\([^)]*\)/g) ?? [];
+  assert.ok(calls.length > 0);
+  for (const call of calls) assert.match(call, /preventScroll:\s*true/, call);
+});
+
+// The mini card's detail button, used from the keyboard, is rendered again and gets the focus back without
+// scrolling the page.
+test("mini card detail button on Enter: the focus comes back without scrolling", async (t) => {
+  if (skip) return t.skip(skip);
+  const page = await browser.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.setContent("<!doctype html><body style='margin:0'><div id=root></div></body>");
+  await page.addScriptTag({
+    content: `customElements.define("ha-card", class extends HTMLElement { constructor() { super(); this.attachShadow({ mode: "open" }).innerHTML = "<slot></slot>"; } });`,
+  });
+  await page.addScriptTag({ content: src });
+  const res = await page.evaluate(
+    ({ states, entities }) => {
+      const args = [];
+      const focus = HTMLElement.prototype.focus;
+      HTMLElement.prototype.focus = function (opts) {
+        args.push(opts ?? null);
+        return focus.call(this, opts);
+      };
+      const el = document.createElement("automation-monitor-mini-card");
+      el.setConfig({ type: "custom:automation-monitor-mini-card" });
+      el.hass = { states, entities, language: "en", callService: () => {} };
+      document.getElementById("root").appendChild(el);
+      el.shadowRoot.querySelector(".zoom").dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 0 }));
+      return { zoomed: el._zoomed, focused: el.shadowRoot.activeElement?.classList.contains("zoom") ?? false, args };
+    },
+    { states, entities }
+  );
+  await page.close();
+  assert.deepEqual(errors, []);
+  assert.equal(res.zoomed, true);
+  assert.equal(res.focused, true);
+  assert.deepEqual(res.args, [{ preventScroll: true }]);
+});
