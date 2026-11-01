@@ -1,7 +1,7 @@
 // Renders the cards with mock Automation Monitor data and saves the README screenshots.
 // Usage: npm run build && npm run screenshots
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,33 @@ import { states, entities, allGood, NOW } from "./mock-states.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/automation-monitor-card.js`, "utf8");
+// New renders are written here first, and only replace a committed screenshot whose pixels they change.
+const work = mkdtempSync(join(tmpdir(), "am-shots-"));
+
+// Decoded pixels (RGBA, every frame of a GIF) and size of an image: two encodings of the same picture compare equal,
+// whatever their bytes (encoder version, compression, metadata). Needs ffmpeg, as the GIFs do.
+const pixels = (file) => {
+  const raw = execFileSync("ffmpeg", ["-loglevel", "error", "-i", file, "-f", "rawvideo", "-pix_fmt", "rgba", "-"], { maxBuffer: 1 << 30 });
+  const size = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", file]).toString().trim();
+  return { raw, size };
+};
+
+// Moves the new render `tmp` to screenshots/`name` unless the committed file shows the same pixels.
+const keep = (tmp, name) => {
+  const out = `${root}screenshots/${name}`;
+  if (existsSync(out)) {
+    const a = pixels(out);
+    const b = pixels(tmp);
+    if (a.size === b.size && a.raw.equals(b.raw)) {
+      rmSync(tmp);
+      console.log(`screenshots/${name} (unchanged)`);
+      return;
+    }
+  }
+  copyFileSync(tmp, out);
+  rmSync(tmp);
+  console.log(`screenshots/${name}`);
+};
 
 const THEMES = {
   light: {
@@ -107,11 +134,11 @@ for (const s of shots) {
   await page.waitForTimeout(800);
   const box = await page.locator("#root").boundingBox();
   await page.screenshot({
-    path: `${root}screenshots/${s.file}.png`,
+    path: join(work, `${s.file}.png`),
     clip: { x: 0, y: 0, width: s.width + 32, height: Math.ceil(box.height) + 32 },
     animations: "disabled",
   });
-  console.log(`screenshots/${s.file}.png`);
+  keep(join(work, `${s.file}.png`), `${s.file}.png`);
   await page.close();
 }
 
@@ -130,16 +157,18 @@ const gifShot = (file, theme) => ({
 const FPS = 20;
 const SECONDS = 2;
 
-// Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small.
+// Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small. The
+// palette comes from the frames and the dithering is ordered (Bayer, no random noise): the same frames give the
+// same GIF.
 const encodeGif = (dir, file, width) => {
-  const out = `${root}screenshots/${file}.gif`;
+  const out = join(work, `${file}.gif`);
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
     "-vf", `scale=${width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
     "-loop", "0", out,
   ]);
   rmSync(dir, { recursive: true });
-  console.log(`screenshots/${file}.gif`);
+  keep(out, `${file}.gif`);
 };
 async function recordRefreshing(gif) {
   const page = await openCard(browser, gif);
@@ -242,3 +271,4 @@ for (const theme of ["light", "dark"]) {
   await recordFolding(gifShot("folding", theme));
 }
 await browser.close();
+rmSync(work, { recursive: true, force: true });
