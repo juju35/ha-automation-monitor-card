@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.14.3 - 2026-10-29
+
+### Fixes
+- Light theme: the OK button text of the Clear confirmation popup, the status chip, the failure/unavailable counters, the failure-streak tag and the hovered entity links are now readable (WCAG AA contrast); dots, borders, badges and icons keep their state colour.
+- The "Automation Monitor not found", "sensors are unavailable" and "needs Home Assistant 2024.8" messages now use the theme's text colour with an orange left border, as Home Assistant alerts do, instead of orange text.
+- With "reduce motion" enabled in the system, the Refresh button no longer spins and the section chevrons no longer animate.
+
+### Maintenance
+- Removed unused style variables and class.
+- Contrast tests computing the WCAG ratio of the card's texts in the default light and dark themes.
+- Dependabot also proposes pre-commit hook updates, and groups the npm dev dependencies; the Biome CI job reads its version from `.pre-commit-config.yaml`.
+
 ## 1.14.2 - 2026-10-29
 
 ### Fixes
