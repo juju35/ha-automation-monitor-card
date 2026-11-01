@@ -279,12 +279,15 @@ test("zoom: false removes the mini card detail button, the full card has none", 
 const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl"];
 
 test("I18N parity: every language has exactly the English keys and placeholders, and no empty text", () => {
+  // Plural forms only some languages need ("<key>_few"…) come on top of a key every language has.
+  const plural = (k) => /_(zero|one|two|few|many)$/.test(k) && !(k in STRINGS.en) && k.replace(/_[a-z]+$/, "") in STRINGS.en;
   const keys = Object.keys(STRINGS.en).sort();
   const vars = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
   assert.equal(Object.keys(STRINGS).sort().join(), ["en", ...LANGS].sort().join());
   for (const l of LANGS) {
     assert.ok(STRINGS[l], l);
-    assert.deepEqual(Object.keys(STRINGS[l]).sort(), keys, l);
+    assert.deepEqual(Object.keys(STRINGS[l]).filter((k) => !plural(k)).sort(), keys, l);
+    for (const k of Object.keys(STRINGS[l]).filter(plural)) assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k.replace(/_[a-z]+$/, "")]), `${l}.${k}`);
     for (const k of keys) {
       assert.equal(typeof STRINGS[l][k], "string", `${l}.${k}`);
       assert.ok(STRINGS[l][k].trim(), `${l}.${k} is empty`);
@@ -517,4 +520,110 @@ test("the mini card editor, without list toggles, leaves the collapse_<list> opt
   ed.setConfig({ type: "custom:automation-monitor-mini-card", collapse_failed: false });
   assert.equal(events.length, 0);
   assert.equal(ed._config.collapse_failed, false);
+});
+
+// --- Review pass 9 ---
+
+const naStates = (failedState) => {
+  const states = baseStates();
+  states["sensor.failed"] = { entity_id: "sensor.failed", state: failedState, attributes: {} };
+  return states;
+};
+
+test("an unavailable or unknown failed-automations sensor is not shown as 0 failures nor All good", () => {
+  for (const state of ["unavailable", "unknown"]) {
+    const html = card(naStates(state))._render();
+    assert.doesNotMatch(html, /All good/, state);
+    assert.match(html, /Sensor unavailable/, state);
+    // The counter shows a dash and the neutral class, not a green 0 with a check mark.
+    assert.match(html, /class="counter clickable na"[\s\S]*?<div class="n">—<\/div>/, state);
+    assert.doesNotMatch(html, /class="counter clickable ok" role="button" tabindex="0" data-entity="sensor\.failed"/, state);
+  }
+});
+
+test("a missing (disabled) failed-automations sensor is not shown as 0 failures nor All good", () => {
+  const states = baseStates();
+  delete states["sensor.failed"];
+  const el = card(states);
+  el._hass.entities = { "sensor.linked": entities["sensor.linked"] };
+  const html = el._render();
+  assert.doesNotMatch(html, /All good/);
+  assert.match(html, /<div class="n">—<\/div>/);
+});
+
+test("with one sensor unavailable, the problems of the other are still counted", () => {
+  const states = naStates("unavailable");
+  states["sensor.linked"] = {
+    entity_id: "sensor.linked",
+    state: "2",
+    attributes: { entities: [{ entity_id: "light.kitchen", name: "Kitchen" }, { entity_id: "light.hall", name: "Hall" }] },
+  };
+  const html = card(states)._render();
+  assert.match(html, /class="chip clickable warn"[^>]*>[\s\S]*?2 problems/);
+  assert.match(html, /class="n">—</);
+  assert.match(html, /class="n">2</);
+});
+
+test("plural forms: 1 is singular in every language, Serbian and Polish use their 2-4 form", () => {
+  const el = card(baseStates());
+  const say = (language, key, n) => {
+    el._config = { language };
+    return el._t(key, { n });
+  };
+  const ONE = {
+    en: "1 automation",
+    fr: "1 automatisation",
+    de: "1 Automatisierung",
+    es: "1 automatización",
+    it: "1 automazione",
+    nl: "1 automatisering",
+    pt: "1 automatização",
+    pl: "1 automatyzacja",
+    sr: "1 аутоматизација",
+    "sr-Latn": "1 automatizacija",
+  };
+  for (const [l, text] of Object.entries(ONE)) assert.equal(say(l, "automations", 1), text, l);
+  // "1 problem": never the plural text with 1 in it.
+  for (const l of Object.keys(ONE)) assert.notEqual(say(l, "n_problems", 1), STRINGS[l].n_problems.replace("{n}", "1"), l);
+  const cases = {
+    sr: { automations: ["1 аутоматизација", "2 аутоматизације", "5 аутоматизација", "21 аутоматизација", "22 аутоматизације"], n_problems: ["1 проблем", "2 проблема", "5 проблема", "21 проблем", "22 проблема"] },
+    "sr-Latn": {
+      automations: ["1 automatizacija", "2 automatizacije", "5 automatizacija", "21 automatizacija", "22 automatizacije"],
+      n_problems: ["1 problem", "2 problema", "5 problema", "21 problem", "22 problema"],
+    },
+    pl: {
+      automations: ["1 automatyzacja", "2 automatyzacje", "5 automatyzacji", "21 automatyzacji", "22 automatyzacje"],
+      n_problems: ["1 problem", "2 problemy", "5 problemów", "21 problemów", "22 problemy"],
+    },
+    en: { automations: ["1 automation", "2 automations", "5 automations", "21 automations", "22 automations"], n_problems: ["1 problem", "2 problems", "5 problems", "21 problems", "22 problems"] },
+  };
+  for (const [l, keys] of Object.entries(cases))
+    for (const [key, texts] of Object.entries(keys)) assert.deepEqual([1, 2, 5, 21, 22].map((n) => say(l, key, n)), texts, `${l}.${key}`);
+});
+
+test("the section title toggle holds no button: Clear all sits next to it, not inside it", () => {
+  const el = card(baseStates());
+  el._config = { expand_failed: true };
+  const html = el._render();
+  const title = html.match(/<div class="section-title[^"]*"[^>]*>[\s\S]*?<\/div>\s*(?=<div class="items">)/)[0];
+  const toggle = title.match(/<span class="toggle"[^>]*role="button"[^>]*>([\s\S]*?)<\/span><\/span>/);
+  assert.ok(toggle, "no role=button toggle in the section title");
+  assert.doesNotMatch(toggle[1], /<button/);
+  assert.match(title, /data-action="reset_all"/);
+  assert.match(toggle[0], /aria-expanded="true"/);
+  // The title container itself is not a button any more.
+  assert.doesNotMatch(title.match(/<div class="section-title[^>]*>/)[0], /role="button"/);
+});
+
+test("an unavailable sensor whose list is hidden (show_failed: false) leaves the status at All good", () => {
+  const el = card(naStates("unavailable"));
+  el._config = { show_failed: false };
+  const html = el._render();
+  assert.match(html, /All good/);
+  assert.doesNotMatch(html, /Sensor unavailable/);
+  // The mini card shares the counters: a dash there too.
+  const mini = new AutomationMonitorMiniCard();
+  mini._config = {};
+  mini._hass = { states: naStates("unknown"), entities, devices, language: "en" };
+  assert.match(mini._render(), /<div class="n">—<\/div>/);
 });

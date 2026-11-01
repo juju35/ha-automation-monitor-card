@@ -87,3 +87,46 @@ test("reordered failures without moveBefore: Enter never resets another automati
   assert.ok(r.focused === null || r.focused === target, `focus moved to ${r.focused}`);
   assert.ok(r.calls.every((c) => c.endsWith(` ${target}`)), `unexpected calls: ${r.calls}`);
 });
+
+// The section title toggle (role=button, aria-expanded) folds its list on Enter and Space and keeps the focus;
+// the Clear all button next to it opens its popup and does not fold the list.
+test("section toggle: Enter and Space fold the list and keep the focus, Clear all does not fold", async (t) => {
+  if (skip) return t.skip(skip);
+  const page = await browser.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.setContent("<!doctype html><body><div id=root></div></body>");
+  await page.addScriptTag({
+    content: `customElements.define("ha-card", class extends HTMLElement { constructor() { super(); this.attachShadow({ mode: "open" }).innerHTML = "<slot></slot>"; } });`,
+  });
+  await page.addScriptTag({ content: src });
+  await page.evaluate(
+    ({ states, entities }) => {
+      const el = document.createElement("automation-monitor-card");
+      el.setConfig({ type: "custom:automation-monitor-card", show_linked: false });
+      el.hass = { states, entities, language: "en", callService: () => {} };
+      document.getElementById("root").appendChild(el);
+      el.shadowRoot.querySelector('[data-section="failed"] .toggle').focus();
+    },
+    { states, entities }
+  );
+  const state = () =>
+    page.evaluate(() => {
+      const sr = document.querySelector("automation-monitor-card").shadowRoot;
+      return {
+        expanded: sr.querySelector('[data-section="failed"] .toggle').getAttribute("aria-expanded"),
+        items: !!sr.querySelector(".items"),
+        focused: sr.activeElement?.classList.contains("toggle") ?? false,
+        modal: !!sr.querySelector(".modal"),
+      };
+    });
+  assert.deepEqual(await state(), { expanded: "false", items: false, focused: true, modal: false });
+  await page.keyboard.press("Enter");
+  assert.deepEqual(await state(), { expanded: "true", items: true, focused: true, modal: false });
+  await page.keyboard.press(" ");
+  assert.deepEqual(await state(), { expanded: "false", items: false, focused: true, modal: false });
+  await page.evaluate(() => document.querySelector("automation-monitor-card").shadowRoot.querySelector('[data-action="reset_all"]').click());
+  assert.deepEqual(await state(), { expanded: "false", items: false, focused: false, modal: true });
+  await page.close();
+  assert.deepEqual(errors, []);
+});
