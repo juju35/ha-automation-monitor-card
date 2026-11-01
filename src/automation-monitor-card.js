@@ -970,22 +970,33 @@ class AutomationMonitorBase extends HTMLElement {
   }
 
   // The card's width sets the host attributes the styles adapt to (no CSS size container, see :host above):
-  // narrow below 384 px, compact below 320 px, nologo below 280 px, tiny below 245 px. The observer runs after layout and before paint.
+  // narrow below 384 px, compact below 320 px, nologo below 280 px, tiny below 245 px. Only a width change counts,
+  // and the attributes are set on the next frame, not in the callback: they change the card's height, and resizing
+  // the observed card inside its own callback is a "ResizeObserver loop completed with undelivered notifications"
+  // error on window at every threshold crossed.
   _observeWidth() {
     if (typeof ResizeObserver === "undefined") return;
+    this._roWidth = undefined;
     this._ro ??= new ResizeObserver((entries) => {
       const w = entries[entries.length - 1].contentRect.width;
-      if (!w) return;
-      this.toggleAttribute("narrow", w < 384);
-      this.toggleAttribute("compact", w < 320);
-      this.toggleAttribute("nologo", w < 280);
-      this.toggleAttribute("tiny", w < 245);
+      if (!w || w === this._roWidth) return;
+      this._roWidth = w;
+      if (this._roFrame) cancelAnimationFrame(this._roFrame);
+      this._roFrame = requestAnimationFrame(() => {
+        this._roFrame = 0;
+        this.toggleAttribute("narrow", w < 384);
+        this.toggleAttribute("compact", w < 320);
+        this.toggleAttribute("nologo", w < 280);
+        this.toggleAttribute("tiny", w < 245);
+      });
     });
     this._ro.observe(this);
   }
 
   disconnectedCallback() {
     this._ro?.disconnect();
+    if (this._roFrame) cancelAnimationFrame(this._roFrame);
+    this._roFrame = 0;
     clearInterval(this._timer);
     this._stopRefresh();
     document.removeEventListener("click", this._onOutside, true);

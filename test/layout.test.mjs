@@ -68,8 +68,9 @@ const measure = async (type, config, { langs = LANGS, widths = WIDTHS, variants 
   await page.addScriptTag({ content: src });
   const problems = await page.evaluate(
     async ({ type, config, variants, entities, langs, widths, MIN_NAME, MIN_ITEM_TITLE, chipLabel }) => {
-      // The width attributes come from a ResizeObserver: measure on the next frames, as the user sees the card.
-      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      // The width attributes come from a ResizeObserver and are set on the frame after it: measure once they are, as
+      // the user sees the card.
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))));
       const out = [];
       const root = document.getElementById("root");
       const tag = type === "zoomed" ? "automation-monitor-mini-card" : type;
@@ -232,7 +233,7 @@ test("intrinsic-width containers: the cards keep a usable width and still fit a 
             document.getElementById(wrapped ? `${id}-div` : id).append(box);
             out.push([wrapped ? `${id} (in a div)` : id, type, el]);
           }
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))));
       return out.map(([id, type, el]) => {
         const grid = el.closest("body > div").getBoundingClientRect();
         const card = el.shadowRoot.querySelector("ha-card").getBoundingClientRect();
@@ -249,4 +250,57 @@ test("intrinsic-width containers: the cards keep a usable width and still fit a 
       assert.ok(over <= 0, `${k}: overflows its grid by ${over}px`);
     } else assert.ok(width >= 245, `${k}: ${width}px`);
   }
+});
+
+// Crossing a width threshold (narrow, compact, nologo, tiny) changes the card's height. Setting the attributes inside
+// the ResizeObserver callback resized the observed card there: every crossing, first phone render included, sent
+// window a "ResizeObserver loop completed with undelivered notifications" error. The attributes follow the width
+// on the next frame, without any error, and a width that does not change sets nothing.
+test("width thresholds: the attributes follow the width without any ResizeObserver loop error", async (t) => {
+  if (skip) return t.skip(skip);
+  const page = await browser.newPage();
+  await page.setContent(`<!doctype html><body style="margin:0;font-family:Arial"></body>`);
+  await page.addScriptTag({
+    content: `customElements.define("ha-card", class extends HTMLElement { constructor() { super(); this.attachShadow({ mode: "open" }).innerHTML = "<style>:host{display:block;overflow:hidden}</style><slot></slot>"; } });`,
+  });
+  await page.addScriptTag({ content: src });
+  const res = await page.evaluate(
+    async ({ states, entities }) => {
+      const errors = [];
+      window.addEventListener("error", (e) => errors.push(e.message));
+      const frames = (n) => new Promise((r) => (n ? requestAnimationFrame(() => frames(n - 1).then(r)) : r()));
+      const wrong = [];
+      const cards = [];
+      for (const type of ["automation-monitor-card", "automation-monitor-mini-card"]) {
+        const slot = document.createElement("div");
+        slot.style.width = "150px";
+        const el = document.createElement(type);
+        el.setConfig({ type: `custom:${type}`, expand_failed: true, expand_linked: true });
+        el.hass = { states, entities, language: "en", callService: () => {} };
+        slot.append(el);
+        document.body.append(slot);
+        cards.push([type, slot, el]);
+      }
+      // First render at phone width, then every threshold crossed both ways, then a detach / attach.
+      for (const width of [150, 500, 380, 300, 270, 200, 150, 400, 260, 500, "detach", 230]) {
+        for (const [, slot, el] of cards)
+          if (width === "detach") {
+            el.remove();
+            slot.style.width = "230px";
+            slot.append(el);
+          } else slot.style.width = `${width}px`;
+        await frames(4);
+        const w = width === "detach" ? 230 : width;
+        for (const [type, , el] of cards) {
+          const want = { narrow: w < 384, compact: w < 320, nologo: w < 280, tiny: w < 245 };
+          for (const [a, on] of Object.entries(want)) if (el.hasAttribute(a) !== on) wrong.push(`${type} ${width}px: ${a} ${!on}`);
+        }
+      }
+      return { errors, wrong };
+    },
+    { states, entities }
+  );
+  await page.close();
+  assert.deepEqual(res.wrong, []);
+  assert.deepEqual(res.errors, []);
 });

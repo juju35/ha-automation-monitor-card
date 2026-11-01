@@ -1,42 +1,21 @@
 // Renders the cards with mock Automation Monitor data and saves the README screenshots.
 // Usage: npm run build && npm run screenshots
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { states, entities, allGood, NOW } from "./mock-states.mjs";
+import { keep as keepPixels } from "./pixels.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/automation-monitor-card.js`, "utf8");
 // New renders are written here first, and only replace a committed screenshot whose pixels they change.
 const work = mkdtempSync(join(tmpdir(), "am-shots-"));
 
-// Decoded pixels (RGBA, every frame of a GIF) and size of an image: two encodings of the same picture compare equal,
-// whatever their bytes (encoder version, compression, metadata). Needs ffmpeg, as the GIFs do.
-const pixels = (file) => {
-  const raw = execFileSync("ffmpeg", ["-loglevel", "error", "-i", file, "-f", "rawvideo", "-pix_fmt", "rgba", "-"], { maxBuffer: 1 << 30 });
-  const size = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", file]).toString().trim();
-  return { raw, size };
-};
-
-// Moves the new render `tmp` to screenshots/`name` unless the committed file shows the same pixels.
-const keep = (tmp, name) => {
-  const out = `${root}screenshots/${name}`;
-  if (existsSync(out)) {
-    const a = pixels(out);
-    const b = pixels(tmp);
-    if (a.size === b.size && a.raw.equals(b.raw)) {
-      rmSync(tmp);
-      console.log(`screenshots/${name} (unchanged)`);
-      return;
-    }
-  }
-  copyFileSync(tmp, out);
-  rmSync(tmp);
-  console.log(`screenshots/${name}`);
-};
+// Moves the new render `tmp` to screenshots/`name` unless the committed file shows the same pixels (scripts/pixels.mjs).
+const keep = (tmp, name) => console.log(`screenshots/${name}${keepPixels(tmp, `${root}screenshots/${name}`) ? "" : " (unchanged)"}`);
 
 const THEMES = {
   light: {
@@ -103,6 +82,10 @@ async function openCard(browser, s) {
     },
     { type: s.type, config: s.config, states, entities, overrides: s.overrides, zoom: !!s.zoom }
   );
+  // The width attributes (narrow, compact…) are set on the animation frame after the card's ResizeObserver runs, and
+  // the paused clock holds animation frames: let a real frame go by (the observer), then run one frame of the clock.
+  await page.waitForTimeout(50);
+  await page.clock.runFor(20);
   return page;
 }
 
