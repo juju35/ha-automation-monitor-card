@@ -91,6 +91,8 @@ test("narrow header: the title keeps a few characters, the chip shrinks, the ico
   assert.doesNotMatch(rule(".chip"), /max-width/);
   assert.match(rule(".chip .txt"), /text-overflow: ellipsis/);
   assert.match(BASE_STYLE, /:host\(\[tiny\]\) \.chip \.txt \{ display: none; \}/);
+  assert.match(BASE_STYLE, /:host\(\[compact\]\) \.logo \{[^}]*width: 28px/);
+  assert.match(BASE_STYLE, /:host\(\[nologo\]\) \.logo-link \{ display: none; \}/);
   for (const s of [BASE_STYLE, FULL_STYLE]) assert.doesNotMatch(s.replace(/\/\*[\s\S]*?\*\//g, ""), /container-type:|container: [^;]*\/|@container/);
   assert.match(rule(".refresh"), /flex: none/);
   assert.match(BASE_STYLE, /\.zoom \{[^}]*flex: none/);

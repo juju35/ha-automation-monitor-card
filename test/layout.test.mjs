@@ -176,17 +176,17 @@ for (const dark of [false, true])
       assert.deepEqual(problems, []);
     });
 
-// The title block must not take the chip's room (it used to cut "Ready" to "Re…" at 320 px): the chip shows its
-// whole label from 280 px (320 px for the zoomed mini card, which has one more button), and its longest label,
-// "Sensor unavailable", from 320 px (360 px zoomed), up to 500 px; narrower, it is only cut when the title is down
-// to its few characters.
+// The title block must not take the chip's room (it used to cut "Ready" to "Re…" at 320 px): from 245 px up to 500 px
+// the chip shows its whole label (a smaller logo below 320 px, none below 280 px). The longest label, "Sensor
+// unavailable" (a rare state), needs 320 px on the mini card and 360 px zoomed (one more button); narrower, it is
+// only cut once the title is down to its few characters, its text staying in the tooltip.
 const { sensorUnavailable, ...SHORT_LABELS } = VARIANTS;
 for (const [type, from, fromLong] of [
-  ["automation-monitor-card", 280, 320],
-  ["automation-monitor-mini-card", 280, 320],
-  ["zoomed", 320, 360],
+  ["automation-monitor-card", 245, 245],
+  ["automation-monitor-mini-card", 245, 320],
+  ["zoomed", 245, 360],
 ])
-  test(`${type}: the status chip shows its whole label from ${from} px (${fromLong} px "Sensor unavailable") to 500 px (en, pl, sr-Latn)`, async (t) => {
+  test(`${type}: the status chip shows its whole label from ${from} px ("Sensor unavailable" from ${fromLong} px) to 500 px (en, pl, sr-Latn)`, async (t) => {
     if (skip) return t.skip(skip);
     const opts = { langs: ["en", "pl", "sr-Latn"], widths: [245, 280, 320, 360, 420, 500] };
     const problems = [

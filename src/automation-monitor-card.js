@@ -792,7 +792,7 @@ const BASE_STYLE = `
   :host { --am-blue: #1db6ec; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa600);
           --am-crit: var(--error-color, #db4437);
           --am-blue-text: color-mix(in srgb, var(--am-blue) 40%, var(--primary-text-color, #212121)); }
-  /* A block host: its width (watched by a ResizeObserver, see _observeWidth) sets the narrow / tiny / phone
+  /* A block host: its width (watched by a ResizeObserver, see _observeWidth) sets the narrow / compact / nologo / tiny
      attributes below. No CSS size container: its size containment drops the card to ~24 px in a container that
      sizes it by its content (layout-card, button-card, an inline-block, a flex row). min-width: 0 lets a grid or
      flex layout (a 1fr column) make the card narrower than its longest unbreakable text. */
@@ -811,13 +811,15 @@ const BASE_STYLE = `
   /* The chip keeps its whole label and only truncates when the title is down to its minimum width. */
   .chip .txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
-  /* Below 245 px (6 columns of the Sections view on a phone) the chip shows only its dot (its text stays in title
-     and aria-label) and the header gaps narrow; below 200 px the logo goes too, so the title stays readable and the
-     buttons stay in the card. */
+  /* Narrow headers free room for the title and the chip's whole label, step by step: below 320 px a smaller logo and
+     narrower gaps, below 280 px no logo, and below 245 px (6 columns of the Sections view on a phone) the chip shows
+     only its dot (its text stays in title and aria-label), so the title stays readable and the buttons stay in the
+     card. */
+  :host([compact]) .header { gap: 6px; }
+  :host([compact]) .logo { height: 28px; width: 28px; border-radius: 7px; }
+  :host([nologo]) .logo-link { display: none; }
   :host([tiny]) .chip .txt { display: none; }
   :host([tiny]) .chip { padding: 4px; }
-  :host([tiny]) .header { gap: 6px; }
-  :host([phone]) .logo-link { display: none; }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
@@ -962,15 +964,16 @@ class AutomationMonitorBase extends HTMLElement {
   }
 
   // The card's width sets the host attributes the styles adapt to (no CSS size container, see :host above):
-  // narrow below 384 px, tiny below 245 px, phone below 200 px. The observer runs after layout and before paint.
+  // narrow below 384 px, compact below 320 px, nologo below 280 px, tiny below 245 px. The observer runs after layout and before paint.
   _observeWidth() {
     if (typeof ResizeObserver === "undefined") return;
     this._ro ??= new ResizeObserver((entries) => {
       const w = entries[entries.length - 1].contentRect.width;
       if (!w) return;
       this.toggleAttribute("narrow", w < 384);
+      this.toggleAttribute("compact", w < 320);
+      this.toggleAttribute("nologo", w < 280);
       this.toggleAttribute("tiny", w < 245);
-      this.toggleAttribute("phone", w < 200);
     });
     this._ro.observe(this);
   }
