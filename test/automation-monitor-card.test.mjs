@@ -274,13 +274,20 @@ test("zoom: false removes the mini card detail button, the full card has none", 
   assert.doesNotMatch(card(baseStates())._render(), /class="zoom"/);
 });
 
-test("I18N parity: every language has exactly the English keys and placeholders", () => {
+const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl"];
+
+test("I18N parity: every language has exactly the English keys and placeholders, and no empty text", () => {
   const keys = Object.keys(STRINGS.en).sort();
   const vars = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
-  for (const l of ["fr", "de", "es", "sr", "sr-Latn"]) {
+  assert.equal(Object.keys(STRINGS).sort().join(), ["en", ...LANGS].sort().join());
+  for (const l of LANGS) {
     assert.ok(STRINGS[l], l);
     assert.deepEqual(Object.keys(STRINGS[l]).sort(), keys, l);
-    for (const k of keys) assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k]), `${l}.${k}`);
+    for (const k of keys) {
+      assert.equal(typeof STRINGS[l][k], "string", `${l}.${k}`);
+      assert.ok(STRINGS[l][k].trim(), `${l}.${k} is empty`);
+      assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k]), `${l}.${k}`);
+    }
   }
 });
 
@@ -296,7 +303,13 @@ test("the language resolves to the full code, then the part before the dash, the
   assert.equal(of("fr-FR"), "fr");
   assert.equal(of("sr-Latn"), "sr-Latn");
   assert.equal(of("sr"), "sr");
-  assert.equal(of("pt-BR"), "en");
+  assert.equal(of("it-IT"), "it");
+  assert.equal(of("nl-BE"), "nl");
+  assert.equal(of("pt"), "pt");
+  // Brazilian Portuguese falls back to European Portuguese, on purpose.
+  assert.equal(of("pt-BR"), "pt");
+  assert.equal(of("pl-PL"), "pl");
+  assert.equal(of("ja"), "en");
   // The card option comes first, then hass.locale, then hass.language.
   assert.equal(lang({ language: "fr", locale: { language: "sr-Latn" } }, {}), "sr-Latn");
   assert.equal(lang({ language: "sr-Latn" }, { language: "sr" }), "sr");
@@ -312,6 +325,27 @@ test("the editor offers Serbian in Cyrillic and Latin", () => {
   const opts = ed._schema().find((f) => f.name === "language").selector.select.options;
   const sr = opts.filter((o) => o.value.startsWith("sr")).map((o) => `${o.value}=${o.label}`);
   assert.equal(sr.join(), "sr=Српски,sr-Latn=Srpski (latinica)");
+});
+
+test("the editor offers every language of the card, with its own name", () => {
+  const ed = new AutomationMonitorCardEditor();
+  ed._hass = { states: {}, language: "en" };
+  ed._config = {};
+  const opts = ed._schema().find((f) => f.name === "language").selector.select.options;
+  // Joined: the arrays come from the card's own realm.
+  assert.equal(
+    opts
+      .filter((o) => o.value)
+      .map((o) => o.value)
+      .sort()
+      .join(),
+    Object.keys(STRINGS).sort().join(),
+  );
+  const label = (v) => opts.find((o) => o.value === v).label;
+  assert.equal(label("it"), "Italiano");
+  assert.equal(label("nl"), "Nederlands");
+  assert.equal(label("pt"), "Português");
+  assert.equal(label("pl"), "Polski");
 });
 
 test("the confirmation popup OK button is not a filled button", () => {
