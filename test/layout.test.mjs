@@ -198,16 +198,20 @@ for (const [type, from, fromLong] of [
 
 // A card in a container that sizes it by its content (layout-card, button-card, an inline-block, a flex row, an
 // `auto` grid column) keeps a usable width, and in a `1fr 1fr` grid (layout-card, grid card, horizontal-stack) of
-// 320, 360 or 500 px it shrinks to its column: no overflow, no card at 0 px.
+// 320, 360 or 500 px it shrinks to its column: no overflow, no card at 0 px; directly or wrapped in a <div>.
 test("intrinsic-width containers: the cards keep a usable width and still fit a narrow 1fr column", async (t) => {
   if (skip) return t.skip(skip);
   const page = await browser.newPage();
   await page.setContent(
-    `<!doctype html><body style="margin:0;font-family:Arial"><div id=inline style="display:inline-block"></div><div id=flex style="display:flex;width:600px"></div>
-     <div id=auto style="display:grid;grid-template-columns:auto;width:600px"></div><div id=autos style="display:grid;grid-template-columns:auto auto"></div>
-     <div id=fr320 style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:320px"></div>
-     <div id=fr360 style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:360px"></div>
-     <div id=fr500 style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:500px"></div></body>`
+    `<!doctype html><body style="margin:0;font-family:Arial">${["", "-div"]
+      .map(
+        (k) => `<div id=inline${k} style="display:inline-block"></div><div id=flex${k} style="display:flex;width:600px"></div>
+     <div id=auto${k} style="display:grid;grid-template-columns:auto;width:600px"></div><div id=autos${k} style="display:grid;grid-template-columns:auto auto"></div>
+     <div id=fr320${k} style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:320px"></div>
+     <div id=fr360${k} style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:360px"></div>
+     <div id=fr500${k} style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:500px"></div>`
+      )
+      .join("")}</body>`
   );
   await page.addScriptTag({
     content: `customElements.define("ha-card", class extends HTMLElement { constructor() { super(); this.attachShadow({ mode: "open" }).innerHTML = "<style>:host{display:block;overflow:hidden}</style><slot></slot>"; } });`,
@@ -216,19 +220,23 @@ test("intrinsic-width containers: the cards keep a usable width and still fit a 
   const res = await page.evaluate(
     async ({ states, entities }) => {
       const out = [];
-      for (const id of ["inline", "flex", "auto", "autos", "fr320", "fr360", "fr500"])
-        for (const type of ["automation-monitor-card", "automation-monitor-mini-card"]) {
-          const el = document.createElement(type);
-          el.setConfig({ type: `custom:${type}` });
-          el.hass = { states, entities, language: "en", callService: () => {} };
-          document.getElementById(id).append(el);
-          out.push([id, type, el]);
-        }
+      // Each card directly in the container, and wrapped in a plain <div> (as some wrappers do).
+      for (const wrapped of [false, true])
+        for (const id of ["inline", "flex", "auto", "autos", "fr320", "fr360", "fr500"])
+          for (const type of ["automation-monitor-card", "automation-monitor-mini-card"]) {
+            const el = document.createElement(type);
+            el.setConfig({ type: `custom:${type}` });
+            el.hass = { states, entities, language: "en", callService: () => {} };
+            const box = wrapped ? document.createElement("div") : el;
+            if (wrapped) box.append(el);
+            document.getElementById(wrapped ? `${id}-div` : id).append(box);
+            out.push([wrapped ? `${id} (in a div)` : id, type, el]);
+          }
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       return out.map(([id, type, el]) => {
-        const box = el.parentElement.getBoundingClientRect();
+        const grid = el.closest("body > div").getBoundingClientRect();
         const card = el.shadowRoot.querySelector("ha-card").getBoundingClientRect();
-        return { id, type, width: Math.round(card.width), over: Math.round(card.right - box.right), column: Math.round((box.width - 8) / 2) };
+        return { id, type, width: Math.round(card.width), over: Math.round(card.right - grid.right), column: Math.round((grid.width - 8) / 2) };
       });
     },
     { states, entities }

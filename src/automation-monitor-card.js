@@ -793,10 +793,16 @@ const BASE_STYLE = `
           --am-crit: var(--error-color, #db4437);
           --am-blue-text: color-mix(in srgb, var(--am-blue) 40%, var(--primary-text-color, #212121)); }
   /* A block host: its width (watched by a ResizeObserver, see _observeWidth) sets the narrow / compact / nologo / tiny
-     attributes below. No CSS size container: its size containment drops the card to ~24 px in a container that
-     sizes it by its content (layout-card, button-card, an inline-block, a flex row). min-width: 0 lets a grid or
-     flex layout (a 1fr column) make the card narrower than its longest unbreakable text. */
+     attributes below. No CSS size container on the host: its size containment drops the card to ~24 px in a
+     container that sizes it by its content (layout-card, button-card, an inline-block, an auto grid column).
+     Instead the card's content does not size the host (inline-size containment on ha-card), and an invisible,
+     zero-height spacer gives it its intrinsic widths: ~420 px preferred (a row of short words), a few px minimum
+     (one word), so a 1fr column, or a <div> wrapping the card in one, can make it as narrow as it needs.
+     min-width: 0 lets a grid or flex layout shrink the host itself. */
   :host { display: block; min-width: 0; }
+  :host::before { content: "${"x ".repeat(35).trim()}"; display: block; height: 0; overflow: hidden; visibility: hidden;
+                  font: 10px/0 monospace; }
+  ha-card { contain: inline-size; }
   ha-card { overflow: hidden; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
