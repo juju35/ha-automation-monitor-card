@@ -525,6 +525,16 @@ const lang = (hass, config) => {
   return STRINGS[l] ? l : STRINGS[l.split("-")[0]] ? l.split("-")[0] : "en";
 };
 
+// Locale for Intl: the full HA locale (pt-BR, fr-CA…) when it is in the card's language, else the card's
+// language. HA uses "pt" for European Portuguese, which Intl reads as Brazilian: it becomes "pt-PT".
+// sr-Latn stays as resolved, so the script follows the card and not the HA locale.
+const intlLang = (hass, config) => {
+  const l = lang(hass, config);
+  const ha = hass && (hass.locale?.language || hass.language);
+  const full = l.includes("-") || !ha || ha.split("-")[0] !== l ? l : ha;
+  return full === "pt" ? "pt-PT" : full;
+};
+
 const t = (hass, config, key, vars = {}) =>
   String(STRINGS[lang(hass, config)][key] ?? STRINGS.en[key] ?? key).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
 
@@ -543,7 +553,7 @@ const ago = (hass, config, iso) => {
   const diff = (d - Date.now()) / 1000;
   const abs = Math.abs(diff);
   if (abs < 60) return t(hass, config, "just_now");
-  const rtf = rtfFor(lang(hass, config));
+  const rtf = rtfFor(intlLang(hass, config));
   if (abs < 3600) return rtf.format(Math.round(diff / 60), "minute");
   if (abs < 86400) return rtf.format(Math.round(diff / 3600), "hour");
   return rtf.format(Math.round(diff / 86400), "day");
@@ -551,7 +561,7 @@ const ago = (hass, config, iso) => {
 
 const fullDate = (hass, config, iso) => {
   const d = new Date(iso);
-  return Number.isFinite(d.getTime()) ? d.toLocaleString(lang(hass, config), { dateStyle: "medium", timeStyle: "short" }) : "";
+  return Number.isFinite(d.getTime()) ? d.toLocaleString(intlLang(hass, config), { dateStyle: "medium", timeStyle: "short" }) : "";
 };
 
 const byDateDesc = (key) => (a, b) => (Date.parse(b[key]) || 0) - (Date.parse(a[key]) || 0);
@@ -1515,7 +1525,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
               { value: "sr-Latn", label: "Srpski (latinica)" },
               { value: "it", label: "Italiano" },
               { value: "nl", label: "Nederlands" },
-              { value: "pt", label: "Português" },
+              { value: "pt", label: "Português (Portugal)" },
               { value: "pl", label: "Polski" },
             ],
           },

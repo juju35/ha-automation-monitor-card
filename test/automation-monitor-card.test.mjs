@@ -15,11 +15,13 @@ const {
   DIALOG_STYLE,
   STRINGS,
   lang,
+  intlLang,
   window: win,
 } = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
   "AutomationMonitorCardEditor",
   "rtfFor",
+  "intlLang",
   "DIALOG_STYLE",
   "window",
   "AutomationMonitorMiniCard",
@@ -318,6 +320,22 @@ test("the language resolves to the full code, then the part before the dash, the
   assert.match(rtfFor("sr").format(-3, "minute"), /[\u0400-\u04FF]/);
 });
 
+test("Intl gets pt-PT for HA's pt, keeps pt-BR and follows the card option", () => {
+  assert.equal(intlLang({ language: "pt" }, {}), "pt-PT");
+  assert.equal(intlLang({ language: "en", locale: { language: "pt" } }, {}), "pt-PT");
+  assert.equal(intlLang({ language: "pt-BR" }, {}), "pt-BR");
+  assert.equal(intlLang({ language: "fr-CA" }, {}), "fr-CA");
+  // The card option comes first; the HA locale is only used when it is in the same language.
+  assert.equal(intlLang({ language: "pt" }, { language: "fr" }), "fr");
+  assert.equal(intlLang({ language: "en" }, { language: "pt" }), "pt-PT");
+  assert.equal(intlLang({ language: "pt-BR" }, { language: "pt" }), "pt-BR");
+  assert.equal(intlLang({ language: "sr" }, { language: "sr-Latn" }), "sr-Latn");
+  assert.equal(intlLang({ language: "ja" }, {}), "en");
+  // European formats, not Brazilian ones.
+  const d = new Date(2026, 10, 1, 12, 0);
+  assert.doesNotMatch(d.toLocaleString(intlLang({ language: "pt" }, {}), { dateStyle: "medium" }), / de nov\. de /);
+});
+
 test("the editor offers Serbian in Cyrillic and Latin", () => {
   const ed = new AutomationMonitorCardEditor();
   ed._hass = { states: {}, language: "en" };
@@ -344,7 +362,7 @@ test("the editor offers every language of the card, with its own name", () => {
   const label = (v) => opts.find((o) => o.value === v).label;
   assert.equal(label("it"), "Italiano");
   assert.equal(label("nl"), "Nederlands");
-  assert.equal(label("pt"), "Português");
+  assert.equal(label("pt"), "Português (Portugal)");
   assert.equal(label("pl"), "Polski");
 });
 
