@@ -33,7 +33,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
 - Visual editor in the dashboard UI for both cards (no YAML needed)
-- Light and dark mode, English, French, German and Spanish
+- Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish
 - Single file, no external dependency, the logo is embedded
 
 ## Prerequisites
@@ -128,7 +128,7 @@ language: fr
 | `exclude_devices` | both | — | Devices to ignore: their unavailable linked entities (and failed automations attached to them) are left out of the lists, counters and status. Device ids (written by the visual editor) or device names |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |
-| `language` | both | Auto | Force language: `en`, `fr`, `de` or `es` (auto-detects from HA settings) |
+| `language` | both | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt` or `pl` (auto-detects from HA settings) |
 
 ## Screenshots
 
@@ -192,7 +192,7 @@ npm run screenshots  # renders the cards (and the GIFs, needs ffmpeg) with mock 
 
 ## Translations
 
-The cards auto-detect the language from your Home Assistant settings. Currently supported:
+The cards auto-detect the language from your Home Assistant settings (Brazilian Portuguese `pt-BR` uses the European Portuguese texts). Currently supported:
 
 | Language | Code |
 |---|---|
@@ -200,6 +200,12 @@ The cards auto-detect the language from your Home Assistant settings. Currently 
 | Français | `fr` |
 | Deutsch | `de` |
 | Español | `es` |
+| Српски | `sr` |
+| Srpski (latinica) | `sr-Latn` |
+| Italiano | `it` |
+| Nederlands | `nl` |
+| Português (Portugal) | `pt` |
+| Polski | `pl` |
 
 Contributions for additional languages are welcome!
 
