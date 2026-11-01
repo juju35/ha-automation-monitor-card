@@ -456,17 +456,21 @@ const tracePath = (hass, entityId, uniqueId) => {
 // ---------------------------------------------------------------------------
 
 const BASE_STYLE = `
-  :host { --am-blue: #1db6ec; --am-navy: #0d4a68; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa600);
-          --am-crit: var(--error-color, #db4437); --am-idle: var(--disabled-text-color, #9e9e9e); }
+  /* Text in a state or accent colour is mixed with the theme's text colour (darker in light themes, lighter in dark
+     ones) to stay readable (WCAG AA 4.5:1); dots, borders, badges and icons keep the pure colour. */
+  :host { --am-blue: #1db6ec; --am-ok: var(--success-color, #43a047); --am-warn: var(--warning-color, #ffa600);
+          --am-crit: var(--error-color, #db4437);
+          --am-blue-text: color-mix(in srgb, var(--am-blue) 40%, var(--primary-text-color, #212121)); }
   ha-card { overflow: hidden; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
   [role="button"]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
-  .ok { --c: var(--am-ok); } .warn { --c: var(--am-warn); } .crit { --c: var(--am-crit); } .idle { --c: var(--am-idle); }
+  .ok { --c: var(--am-ok); } .warn { --c: var(--am-warn); } .crit { --c: var(--am-crit); }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
-          background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent); color: var(--c, var(--am-ok)); flex: none; }
+          background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent);
+          color: color-mix(in srgb, var(--c, var(--am-ok)) 50%, var(--primary-text-color, #212121)); flex: none; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
@@ -476,10 +480,16 @@ const BASE_STYLE = `
   .refresh .icon { width: 20px; height: 20px; }
   .refresh.spin .icon { color: var(--am-blue); animation: am-spin 1s linear infinite; }
   @keyframes am-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .refresh.spin .icon { animation: none; }
+    .section-title .chevron { transition: none; }
+  }
   .titles { flex: 1; min-width: 0; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .warning { padding: 16px; color: var(--am-warn); }
+  /* As ha-alert: theme text colour, warning colour on the left border and a light tint. */
+  .warning { padding: 16px; color: var(--primary-text-color); border-left: 4px solid var(--am-warn);
+             background: color-mix(in srgb, var(--am-warn) 12%, transparent); }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; font: inherit; font-size: 12px;
          font-weight: 500; padding: 4px 8px; border-radius: 16px; background: var(--secondary-background-color, rgba(127,127,127,.12));
          color: var(--primary-text-color); min-width: 0; white-space: nowrap; }
@@ -493,7 +503,7 @@ const BASE_STYLE = `
                     background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
   .counter .badge .icon { width: 18px; height: 18px; }
   .counter .n { font-size: 20px; font-weight: 500; line-height: 1.1; }
-  .counter.crit .n, .counter.warn .n { color: var(--c); }
+  .counter.crit .n, .counter.warn .n { color: color-mix(in srgb, var(--c) 50%, var(--primary-text-color, #212121)); }
   .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; }
   .counter > div:last-child { min-width: 0; }
   .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0;
@@ -513,8 +523,8 @@ const DIALOG_STYLE = `
            box-sizing: border-box; border-radius: 14px; padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 12px; }
   .modal .msg { font-size: 14px; line-height: 1.4; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
-  /* No filled button: the smoked .btn background tinted with the accent colour, accent text. */
-  .modal .btn.primary { color: var(--am-blue); background: color-mix(in srgb, var(--am-blue) 16%, var(--secondary-background-color, rgba(127,127,127,.12))); }
+  /* No filled button: the smoked .btn background tinted with the accent colour, accent-tinted text. */
+  .modal .btn.primary { color: var(--am-blue-text); background: color-mix(in srgb, var(--am-blue) 16%, var(--secondary-background-color, rgba(127,127,127,.12))); }
   .modal .btn.primary:hover { background: color-mix(in srgb, var(--am-blue) 26%, var(--secondary-background-color, rgba(127,127,127,.12))); }
 `;
 
@@ -898,9 +908,9 @@ const FULL_STYLE = `
          background: var(--card-background-color, rgba(127,127,127,.12)); color: var(--primary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tag .icon { width: 14px; height: 14px; color: var(--secondary-text-color); }
   .tag.link { cursor: pointer; }
-  .tag.link:hover { color: var(--am-blue); }
+  .tag.link:hover { color: var(--am-blue-text); }
   .tag.link:hover .icon { color: var(--am-blue); }
-  .tag.streak { color: var(--am-crit); }
+  .tag.streak { color: color-mix(in srgb, var(--am-crit) 50%, var(--primary-text-color, #212121)); }
   .tag.streak .icon { color: var(--am-crit); }
   .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
   .item .btn { background: var(--card-background-color, rgba(127,127,127,.12)); }

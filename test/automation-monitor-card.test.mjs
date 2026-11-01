@@ -283,7 +283,7 @@ test("I18N parity: every language has exactly the English keys and placeholders"
 
 test("the confirmation popup OK button is not a filled button", () => {
   const rule = DIALOG_STYLE.match(/\.modal \.btn\.primary \{([^}]*)\}/)[1];
-  assert.match(rule, /color: var\(--am-blue\)/);
+  assert.match(rule, /color: var\(--am-blue-text\)/);
   assert.doesNotMatch(rule, /#fff|background: var\(--am-blue\)/);
 });
 
