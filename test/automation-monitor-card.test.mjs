@@ -14,6 +14,7 @@ const {
   rtfFor,
   DIALOG_STYLE,
   STRINGS,
+  lang,
   window: win,
 } = load("automation-monitor-card.js", [
   "AutomationMonitorCard",
@@ -28,6 +29,7 @@ const {
   "editorPath",
   "excludedDevices",
   "STRINGS",
+  "lang",
 ]);
 
 const entities = {
@@ -275,10 +277,41 @@ test("zoom: false removes the mini card detail button, the full card has none", 
 test("I18N parity: every language has exactly the English keys and placeholders", () => {
   const keys = Object.keys(STRINGS.en).sort();
   const vars = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
-  for (const l of ["fr", "de", "es"]) {
+  for (const l of ["fr", "de", "es", "sr", "sr-Latn"]) {
+    assert.ok(STRINGS[l], l);
     assert.deepEqual(Object.keys(STRINGS[l]).sort(), keys, l);
     for (const k of keys) assert.equal(vars(STRINGS[l][k]), vars(STRINGS.en[k]), `${l}.${k}`);
   }
+});
+
+test("Serbian: no Latin letters in sr and no Cyrillic in sr-Latn, except brand names", () => {
+  // Brand names and the {x} placeholders stay in Latin letters.
+  const kept = /Automation Monitor|Home Assistant|\{\w+\}/g;
+  for (const [k, v] of Object.entries(STRINGS.sr)) assert.doesNotMatch(v.replace(kept, ""), /[A-Za-z]/, `sr.${k}`);
+  for (const [k, v] of Object.entries(STRINGS["sr-Latn"])) assert.doesNotMatch(v, /[\u0400-\u04FF]/, `sr-Latn.${k}`);
+});
+
+test("the language resolves to the full code, then the part before the dash, then English", () => {
+  const of = (language) => lang({ language }, {});
+  assert.equal(of("fr-FR"), "fr");
+  assert.equal(of("sr-Latn"), "sr-Latn");
+  assert.equal(of("sr"), "sr");
+  assert.equal(of("pt-BR"), "en");
+  // The card option comes first, then hass.locale, then hass.language.
+  assert.equal(lang({ language: "fr", locale: { language: "sr-Latn" } }, {}), "sr-Latn");
+  assert.equal(lang({ language: "sr-Latn" }, { language: "sr" }), "sr");
+  // The relative times and dates follow the script: Latin in sr-Latn, Cyrillic in sr.
+  assert.match(rtfFor("sr-Latn").format(-3, "minute"), /^[^\u0400-\u04FF]*$/);
+  assert.match(rtfFor("sr").format(-3, "minute"), /[\u0400-\u04FF]/);
+});
+
+test("the editor offers Serbian in Cyrillic and Latin", () => {
+  const ed = new AutomationMonitorCardEditor();
+  ed._hass = { states: {}, language: "en" };
+  ed._config = {};
+  const opts = ed._schema().find((f) => f.name === "language").selector.select.options;
+  const sr = opts.filter((o) => o.value.startsWith("sr")).map((o) => `${o.value}=${o.label}`);
+  assert.equal(sr.join(), "sr=Српски,sr-Latn=Srpski (latinica)");
 });
 
 test("the confirmation popup OK button is not a filled button", () => {
