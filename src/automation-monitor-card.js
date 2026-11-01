@@ -47,9 +47,11 @@ const STRINGS = {
     failed_short: "Failed",
     linked_short: "Unavailable",
     all_ok: "All good",
-    one_problem: "1 problem",
+    sensor_unavailable: "Sensor unavailable",
     n_problems: "{n} problems",
+    n_problems_one: "{n} problem",
     automations: "{n} automations",
+    automations_one: "{n} automation",
     last_failure: "Last failure {when}",
     step: "Step",
     streak: "{n} failures in a row",
@@ -94,9 +96,11 @@ const STRINGS = {
     failed_short: "En échec",
     linked_short: "Indisponibles",
     all_ok: "Tout va bien",
-    one_problem: "1 problème",
+    sensor_unavailable: "Capteur indisponible",
     n_problems: "{n} problèmes",
+    n_problems_one: "{n} problème",
     automations: "{n} automatisations",
+    automations_one: "{n} automatisation",
     last_failure: "Dernier échec {when}",
     step: "Étape",
     streak: "{n} échecs consécutifs",
@@ -141,9 +145,11 @@ const STRINGS = {
     failed_short: "Fehlgeschlagen",
     linked_short: "Nicht verfügbar",
     all_ok: "Alles in Ordnung",
-    one_problem: "1 Problem",
+    sensor_unavailable: "Sensor nicht verfügbar",
     n_problems: "{n} Probleme",
+    n_problems_one: "{n} Problem",
     automations: "{n} Automatisierungen",
+    automations_one: "{n} Automatisierung",
     last_failure: "Letzter Fehler {when}",
     step: "Schritt",
     streak: "{n} Fehler in Folge",
@@ -188,9 +194,11 @@ const STRINGS = {
     failed_short: "Fallidas",
     linked_short: "No disponibles",
     all_ok: "Todo bien",
-    one_problem: "1 problema",
+    sensor_unavailable: "Sensor no disponible",
     n_problems: "{n} problemas",
+    n_problems_one: "{n} problema",
     automations: "{n} automatizaciones",
+    automations_one: "{n} automatización",
     last_failure: "Último fallo {when}",
     step: "Paso",
     streak: "{n} fallos seguidos",
@@ -235,12 +243,16 @@ const STRINGS = {
     failed_short: "Неуспеле",
     linked_short: "Недоступни",
     all_ok: "Све је у реду",
-    one_problem: "1 проблем",
+    sensor_unavailable: "Сензор недоступан",
     n_problems: "{n} проблема",
+    n_problems_one: "{n} проблем",
     automations: "{n} аутоматизација",
+    automations_one: "{n} аутоматизација",
+    automations_few: "{n} аутоматизације",
     last_failure: "Последњи неуспех {when}",
     step: "Корак",
     streak: "{n} неуспеха заредом",
+    streak_one: "{n} неуспех заредом",
     unavailable_since: "Недоступно {when}",
     used_by: "Користи се у",
     trace: "Траг",
@@ -282,12 +294,16 @@ const STRINGS = {
     failed_short: "Neuspele",
     linked_short: "Nedostupni",
     all_ok: "Sve je u redu",
-    one_problem: "1 problem",
+    sensor_unavailable: "Senzor nedostupan",
     n_problems: "{n} problema",
+    n_problems_one: "{n} problem",
     automations: "{n} automatizacija",
+    automations_one: "{n} automatizacija",
+    automations_few: "{n} automatizacije",
     last_failure: "Poslednji neuspeh {when}",
     step: "Korak",
     streak: "{n} neuspeha zaredom",
+    streak_one: "{n} neuspeh zaredom",
     unavailable_since: "Nedostupno {when}",
     used_by: "Koristi se u",
     trace: "Trag",
@@ -329,9 +345,11 @@ const STRINGS = {
     failed_short: "Non riuscite",
     linked_short: "Non disponibili",
     all_ok: "Tutto a posto",
-    one_problem: "1 problema",
+    sensor_unavailable: "Sensore non disponibile",
     n_problems: "{n} problemi",
+    n_problems_one: "{n} problema",
     automations: "{n} automazioni",
+    automations_one: "{n} automazione",
     last_failure: "Ultimo errore {when}",
     step: "Passo",
     streak: "{n} errori consecutivi",
@@ -376,9 +394,11 @@ const STRINGS = {
     failed_short: "Mislukt",
     linked_short: "Niet beschikbaar",
     all_ok: "Alles in orde",
-    one_problem: "1 probleem",
+    sensor_unavailable: "Sensor niet beschikbaar",
     n_problems: "{n} problemen",
+    n_problems_one: "{n} probleem",
     automations: "{n} automatiseringen",
+    automations_one: "{n} automatisering",
     last_failure: "Laatste fout {when}",
     step: "Stap",
     streak: "{n} keer achter elkaar mislukt",
@@ -423,9 +443,11 @@ const STRINGS = {
     failed_short: "Falhadas",
     linked_short: "Indisponíveis",
     all_ok: "Tudo bem",
-    one_problem: "1 problema",
+    sensor_unavailable: "Sensor indisponível",
     n_problems: "{n} problemas",
+    n_problems_one: "{n} problema",
     automations: "{n} automatizações",
+    automations_one: "{n} automatização",
     last_failure: "Última falha {when}",
     step: "Passo",
     streak: "{n} falhas seguidas",
@@ -470,9 +492,13 @@ const STRINGS = {
     failed_short: "Nieudane",
     linked_short: "Niedostępne",
     all_ok: "Wszystko OK",
-    one_problem: "1 problem",
-    n_problems: "Problemy: {n}",
-    automations: "Automatyzacje: {n}",
+    sensor_unavailable: "Czujnik niedostępny",
+    n_problems: "{n} problemów",
+    n_problems_one: "{n} problem",
+    n_problems_few: "{n} problemy",
+    automations: "{n} automatyzacji",
+    automations_one: "{n} automatyzacja",
+    automations_few: "{n} automatyzacje",
     last_failure: "Ostatni błąd {when}",
     step: "Krok",
     streak: "Błędy z rzędu: {n}",
@@ -535,8 +561,21 @@ const intlLang = (hass, config) => {
   return full === "pt" ? "pt-PT" : full;
 };
 
-const t = (hass, config, key, vars = {}) =>
-  String(STRINGS[lang(hass, config)][key] ?? STRINGS.en[key] ?? key).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+// Plural forms: with a number {n}, the text "<key>_<CLDR category>" (one, few, many…) of the language is used
+// when it has one, else "<key>". One Intl.PluralRules per language.
+const _plurals = new Map();
+const pluralOf = (l, n) => {
+  let rules = _plurals.get(l);
+  if (!rules) _plurals.set(l, (rules = new Intl.PluralRules(l)));
+  return rules.select(n);
+};
+
+const t = (hass, config, key, vars = {}) => {
+  const l = STRINGS[lang(hass, config)][key] !== undefined ? lang(hass, config) : "en";
+  const dict = STRINGS[l];
+  const form = typeof vars.n === "number" ? dict[`${key}_${pluralOf(l, vars.n)}`] : undefined;
+  return String(form ?? dict[key] ?? key).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+};
 
 const valid = (s) => s && !["unknown", "unavailable", ""].includes(s.state);
 
@@ -759,11 +798,21 @@ const BASE_STYLE = `
   .clickable { cursor: pointer; }
   [role="button"]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
   .ok { --c: var(--am-ok); } .warn { --c: var(--am-warn); } .crit { --c: var(--am-crit); }
+  .na { --c: var(--disabled-text-color, #9e9e9e); }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--am-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap;
           background: color-mix(in srgb, var(--c, var(--am-ok)) 15%, transparent);
-          color: color-mix(in srgb, var(--c, var(--am-ok)) 50%, var(--primary-text-color, #212121)); flex: none; }
+          color: color-mix(in srgb, var(--c, var(--am-ok)) 50%, var(--primary-text-color, #212121)); flex: 0 1 auto; min-width: 0; max-width: 50%; }
+  .chip .txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  /* The header and the content are size containers: narrow cards (Sections view at 6 columns, the mini card's
+     default size) shorten the chip, the section buttons and the counters by their own width. */
+  .header, .content { container-type: inline-size; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
+  /* Narrow header: the chip shows only its dot (its text stays in title and aria-label), so the title stays readable. */
+  @container (max-width: 339px) {
+    .chip .txt { display: none; }
+    .chip { padding: 4px; }
+  }
   .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
   a.logo-link { display: flex; flex: none; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
@@ -776,7 +825,8 @@ const BASE_STYLE = `
     .refresh.spin .icon { animation: none; }
     .section-title .chevron { transition: none; }
   }
-  .titles { flex: 1; min-width: 0; }
+  /* The title block takes the room left, truncates, and keeps a few characters whatever the chip and buttons need. */
+  .titles { flex: 1 1 auto; min-width: 6ch; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* As ha-alert: theme text colour, warning colour on the left border and a light tint. */
@@ -796,7 +846,11 @@ const BASE_STYLE = `
   .counter .badge .icon { width: 18px; height: 18px; }
   .counter .n { font-size: 20px; font-weight: 500; line-height: 1.1; }
   .counter.crit .n, .counter.warn .n { color: color-mix(in srgb, var(--c) 50%, var(--primary-text-color, #212121)); }
-  .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; }
+  .counter .lbl { font-size: 12px; color: var(--secondary-text-color); line-height: 1.2; overflow-wrap: anywhere; }
+  /* Narrow card: one counter per row, so long labels (Automatisierungen, automatiseringen…) fit their counter. */
+  @container (max-width: 359px) {
+    .counters { grid-template-columns: minmax(0, 1fr); }
+  }
   .counter > div:last-child { min-width: 0; }
   .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0;
           border-radius: 50%; display: grid; place-items: center; color: var(--secondary-text-color); }
@@ -1090,7 +1144,9 @@ class AutomationMonitorBase extends HTMLElement {
     const keep = (item) => !ignored?.has(deviceOf(this._hass, item));
     const failures = (valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : []).filter(keep).sort(byDateDesc("last_error_time"));
     const linked = (valid(l) && Array.isArray(l.attributes.entities) ? l.attributes.entities : []).filter(keep).sort(byDateDesc("unavailable_since"));
-    return { failedId: found.failed, linkedId: found.linked, failures, linked };
+    // A sensor that is unavailable, unknown or missing (disabled) says nothing: its counter and the status chip
+    // must not read it as 0 problems.
+    return { failedId: found.failed, linkedId: found.linked, failures, linked, failedNA: !valid(f), linkedNA: !valid(l) };
   }
 
   _status(data) {
@@ -1098,8 +1154,11 @@ class AutomationMonitorBase extends HTMLElement {
     const nf = c.show_failed === false ? 0 : data.failures.length;
     const nl = c.show_linked === false ? 0 : data.linked.length;
     const n = nf + nl;
-    if (!n) return { cls: "ok", text: this._t("all_ok"), entity: data.failedId || data.linkedId };
-    return { cls: nf ? "crit" : "warn", text: n === 1 ? this._t("one_problem") : this._t("n_problems", { n }), entity: nf ? data.failedId : data.linkedId };
+    if (n) return { cls: nf ? "crit" : "warn", text: this._t("n_problems", { n }), entity: nf ? data.failedId : data.linkedId };
+    // No problem known, but a shown list cannot be read: not "All good".
+    const na = (c.show_failed !== false && data.failedNA) || (c.show_linked !== false && data.linkedNA);
+    if (na) return { cls: "na", text: this._t("sensor_unavailable"), entity: (c.show_failed !== false && data.failedNA ? data.failedId : data.linkedId) || "" };
+    return { cls: "ok", text: this._t("all_ok"), entity: data.failedId || data.linkedId };
   }
 
   // True when the subtitle shows the time of the most recent failure (the signature only needs to know
@@ -1136,7 +1195,9 @@ class AutomationMonitorBase extends HTMLElement {
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
         </div>
-        <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${esc(status.entity || "")}"><span class="dot"></span>${esc(status.text)}</span>
+        <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${esc(status.entity || "")}" title="${esc(status.text)}" aria-label="${esc(
+          status.text
+        )}"><span class="dot"></span><span class="txt">${esc(status.text)}</span></span>
         <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
         ${this._zoomButton()}
       </div>`;
@@ -1149,17 +1210,25 @@ class AutomationMonitorBase extends HTMLElement {
 
   _counters(data) {
     const c = this._config;
-    const counter = (id, icon, n, label, cls) =>
-      `<div class="counter clickable ${n ? cls : "ok"}" role="button" tabindex="0" data-entity="${esc(id || "")}">
-        <div class="badge">${svgIcon(n ? icon : ICONS.check)}</div>
-        <div><div class="n">${n}</div><div class="lbl">${esc(label)}</div></div>
+    // An unreadable sensor: a dash in a neutral counter (its own icon, not the check mark of 0), "Sensor
+    // unavailable" in its tooltip.
+    const counter = (id, icon, n, label, cls, na) =>
+      `<div class="counter clickable ${na ? "na" : n ? cls : "ok"}" role="button" tabindex="0" data-entity="${esc(id || "")}"${
+        na ? ` title="${esc(this._t("sensor_unavailable"))}"` : ""
+      }>
+        <div class="badge">${svgIcon(n || na ? icon : ICONS.check)}</div>
+        <div><div class="n">${na ? "—" : n}</div><div class="lbl">${esc(label)}</div></div>
       </div>`;
     const list = [];
     if (c.show_failed !== false)
-      list.push(counter(data.failedId, ICONS.robot_alert, data.failures.length, this._t(this._compact ? "failed_short" : "failed_automations"), "crit"));
+      list.push(
+        counter(data.failedId, ICONS.robot_alert, data.failures.length, this._t(this._compact ? "failed_short" : "failed_automations"), "crit", data.failedNA)
+      );
     if (c.show_linked !== false)
-      list.push(counter(data.linkedId, ICONS.disconnect, data.linked.length, this._t(this._compact ? "linked_short" : "linked_unavailable"), "warn"));
-    return list.length ? `<div class="counters" style="${list.length === 1 ? "grid-template-columns:1fr" : ""}">${list.join("")}</div>` : "";
+      list.push(
+        counter(data.linkedId, ICONS.disconnect, data.linked.length, this._t(this._compact ? "linked_short" : "linked_unavailable"), "warn", data.linkedNA)
+      );
+    return list.length ? `<div class="counters" style="${list.length === 1 ? "grid-template-columns:minmax(0,1fr)" : ""}">${list.join("")}</div>` : "";
   }
 
   _errorCard(key) {
@@ -1176,9 +1245,16 @@ const FULL_STYLE = `
   .section-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; text-transform: uppercase;
                    letter-spacing: .04em; color: var(--secondary-text-color); margin-bottom: 6px; min-height: 24px; }
   .section-title .icon { width: 16px; height: 16px; }
-  .section-title .count { text-transform: none; letter-spacing: 0; font-weight: 400; }
-  .section-title .spacer { flex: 1; }
-  .section-title .btn { text-transform: none; letter-spacing: 0; }
+  /* The label takes the room left and wraps; the button, count and chevron never shrink. */
+  .section-title .toggle { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; border-radius: 6px; }
+  .section-title .label { min-width: 0; overflow-wrap: anywhere; }
+  .section-title .count { text-transform: none; letter-spacing: 0; font-weight: 400; flex: none; }
+  .section-title .btn { text-transform: none; letter-spacing: 0; flex: none; }
+  /* Narrow card: the Clear all button shows only its icon (its text stays in title and aria-label). */
+  @container (max-width: 359px) {
+    .section-title .btn > span { display: none; }
+    .section-title .btn { padding: 4px 6px; }
+  }
   .section-title.fold { cursor: pointer; user-select: none; }
   .section-title .chevron { transition: transform .2s ease; }
   .section-title.closed { margin-bottom: 0; }
@@ -1188,9 +1264,11 @@ const FULL_STYLE = `
           background: var(--secondary-background-color, rgba(127,127,127,.08)); border-left: 3px solid var(--c); }
   .item > .icon { width: 20px; height: 20px; color: var(--c); margin-top: 1px; }
   .item .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .item .top { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-  .item .title { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .item .when { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; flex: none; }
+  /* Name, then time: the time goes under the name when both do not fit, and both truncate rather than overflow. */
+  .item .top { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 1px; min-width: 0; }
+  .item .title { flex: 1 1 auto; min-width: 0; max-width: 100%; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .when { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; flex: 0 1 auto; min-width: 0; max-width: 100%;
+                overflow: hidden; text-overflow: ellipsis; }
   .item .eid { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item .msg { font-family: var(--code-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace); font-size: 12px; line-height: 1.4;
                padding: 4px 8px; border-radius: 8px; overflow-wrap: anywhere; color: var(--primary-text-color);
@@ -1266,14 +1344,16 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     return this._folds?.[key] ?? (this._config[`expand_${key}`] === true || this._config[`collapse_${key}`] === false);
   }
 
-  // Title: icon, label, actions, "shown/total" counter and chevron, as in the Dockhand card.
+  // Title: icon, label, actions, "shown/total" counter and chevron, as in the Dockhand card. A click anywhere on it
+  // but on its button folds the list; for the keyboard and screen readers the toggle is the icon and label (with
+  // aria-expanded), next to the Clear all button and not around it (no button inside a button).
   _section(key, icon, label, items, renderItem, button) {
     const open = this._isOpen(key);
     const shown = this._expanded[key] ? items.length : Math.min(items.length, this._max());
     return `<div>
-      <div class="section-title fold ${open ? "" : "closed"}" role="button" tabindex="0" aria-expanded="${open}" data-action="fold" data-section="${key}">${svgIcon(icon)}<span>${esc(
-      label
-    )}</span><span class="spacer"></span>${button || ""}<span class="count">${shown}/${items.length}</span>${svgIcon(ICONS.chevron_down, "chevron")}</div>
+      <div class="section-title fold ${open ? "" : "closed"}" data-action="fold" data-section="${key}"><span class="toggle" role="button" tabindex="0" aria-expanded="${open}">${svgIcon(
+        icon
+      )}<span class="label">${esc(label)}</span></span>${button || ""}<span class="count">${shown}/${items.length}</span>${svgIcon(ICONS.chevron_down, "chevron")}</div>
       ${open ? this._list(key, items, renderItem) : ""}
     </div>`;
   }
@@ -1282,7 +1362,9 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     const controls = this._config.show_controls !== false;
     const button =
       controls && data.failures.length
-        ? `<button class="btn" data-action="reset_all" title="${esc(this._t("reset_all"))}">${svgIcon(ICONS.clear)}<span>${esc(this._t("reset_all"))}</span></button>`
+        ? `<button class="btn" data-action="reset_all" title="${esc(this._t("reset_all"))}" aria-label="${esc(this._t("reset_all"))}">${svgIcon(ICONS.clear)}<span>${esc(
+            this._t("reset_all")
+          )}</span></button>`
         : "";
     // Nothing to list: the counter above already says so.
     if (!data.failures.length) return "";
