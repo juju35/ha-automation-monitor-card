@@ -469,7 +469,7 @@ const STRINGS = {
     linked_unavailable: "Niedostępne powiązane encje",
     failed_short: "Nieudane",
     linked_short: "Niedostępne",
-    all_ok: "Wszystko w porządku",
+    all_ok: "Wszystko OK",
     one_problem: "1 problem",
     n_problems: "Problemy: {n}",
     automations: "Automatyzacje: {n}",
