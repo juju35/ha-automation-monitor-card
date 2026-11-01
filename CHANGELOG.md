@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.14.6 - 2026-11-01
+
+### Fixes
+- When the failed automations sensor (or the linked entities one) is unavailable, unknown or disabled, its counter shows a dash instead of a green 0, and the status chip says "Sensor unavailable" instead of "All good" when no other problem is known.
+- Narrow cards (6 columns of the Sections view, and the mini card at its default size) stay readable in every language: the title is no longer squeezed to a couple of letters (the status chip shrinks to its coloured dot, its text staying in the tooltip), the **Clear all** button no longer runs over the `3/3` count (icon only when narrow), the counters stack instead of letting long labels spill over the next one, and the name of an unavailable entity is no longer hidden by its "Unavailable 45 minutes ago" time, which moves under the name when both do not fit.
+- Plurals: "1 automation" and "1 problem" in every language, and the Serbian and Polish forms for 2-4 and 21, 22… ("2 аутоматизације", "21 проблем", "2 problemy", "5 problemów").
+- Screen readers: the section title is no longer a button containing the **Clear all** button; the fold toggle (with its expanded state) and **Clear all** are now side by side.
+
+### Maintenance
+- Screenshots and GIFs are rendered with the page clock paused and the spin and chevron angles set frame by frame, so an unchanged card gives byte-identical files and pull requests no longer recommit the GIFs.
+- One Biome version (2.6.4) for the pre-commit hook, its package, `biome.json` and the CI Biome job, which now reads the package version the hook installs; a test checks they stay aligned.
+- Browser tests measuring the cards from 245 px wide in all ten languages.
+
 ## 1.14.5 - 2026-11-01
 
 ### Added
