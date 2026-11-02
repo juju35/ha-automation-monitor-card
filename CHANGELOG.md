@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.8 - 2026-11-02
 
 ### Fixes
 - Cards: the header icon takes the status color like the status chip (green when all is good, orange for unavailable entities, red for failed automations, grey when a sensor can't be read). It was always red.
