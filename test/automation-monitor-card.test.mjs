@@ -627,3 +627,11 @@ test("an unavailable sensor whose list is hidden (show_failed: false) leaves the
   mini._hass = { states: naStates("unknown"), entities, devices, language: "en" };
   assert.match(mini._render(), /<div class="n">—<\/div>/);
 });
+
+test("the header icon takes the status color: green when all is good, red on a failure", () => {
+  const ok = baseStates();
+  ok["sensor.failed"] = { entity_id: "sensor.failed", state: "0", attributes: { automations: [] } };
+  assert.match(card(ok)._render(), /<div class="logo ok" aria-hidden="true">/);
+  assert.match(card(baseStates())._render(), /<div class="logo crit" aria-hidden="true">/);
+  assert.match(card(naStates("unavailable"))._render(), /<div class="logo na" aria-hidden="true">/);
+});
