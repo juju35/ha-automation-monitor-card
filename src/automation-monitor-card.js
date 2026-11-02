@@ -1464,8 +1464,6 @@ class AutomationMonitorCard extends AutomationMonitorBase {
 // ---------------------------------------------------------------------------
 
 const MINI_STYLE = `
-  .logo { height: 32px; width: 32px; }
-  .logo .icon { width: 18px; height: 18px; }
   .name { font-size: 16px; }
   /* A narrower Refresh button (same icon) leaves the title room for the detail button. */
   .refresh { width: 28px; height: 28px; }
