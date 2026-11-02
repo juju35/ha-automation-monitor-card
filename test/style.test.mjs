@@ -74,6 +74,11 @@ test("prefers-reduced-motion stops the refresh spin and the chevron transition",
   assert.match(media[1], /\.section-title \.chevron \{[^}]*transition: none/);
 });
 
+test("the mini card keeps the full card's header icon size (40 px logo)", () => {
+  assert.doesNotMatch(MINI_STYLE, /(^|[\s}])\.logo[\s{]/);
+  assert.match(BASE_STYLE, /\.logo \{ height: 40px; width: 40px;/);
+});
+
 test("no dead state colours or classes in the styles", () => {
   for (const name of ["--am-navy", "--am-idle", ".idle"]) assert.ok(!BASE_STYLE.includes(name), name);
 });
