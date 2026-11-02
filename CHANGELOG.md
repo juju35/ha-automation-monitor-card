@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.7 - 2026-11-02
 
 ### Changes
 - Cards: the header shows the tinted round icon of the project's showcase page (red `mdi:robot-confused-outline`) instead of the Automation Monitor logo, like the generic icons of the other cards.
