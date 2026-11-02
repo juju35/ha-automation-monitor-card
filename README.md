@@ -87,7 +87,6 @@ type: custom:automation-monitor-mini-card
 ```yaml
 type: custom:automation-monitor-card
 title: Automations
-show_logo: true
 show_failed: true
 show_linked: true
 expand_failed: false
@@ -104,7 +103,6 @@ language: fr
 ```yaml
 type: custom:automation-monitor-mini-card
 title: Automations
-show_logo: true
 show_failed: true
 show_linked: true
 zoom: true
@@ -116,7 +114,6 @@ language: fr
 | Option | Card | Default | Description |
 |---|---|---|---|
 | `title` | both | `Automation Monitor` | Card title |
-| `show_logo` | both | `true` | Show the robot icon before the title |
 | `show_failed` | both | `true` | Failed automations (counter and list) |
 | `show_linked` | both | `true` | Unavailable linked entities (counter and list) |
 | `expand_failed` | full | `false` | Failed automations expanded when the card loads (click the section title to fold / unfold) |

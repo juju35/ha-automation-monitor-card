@@ -78,7 +78,6 @@ const STRINGS = {
     no_registry: "This card needs Home Assistant 2024.8 or later.",
     // Editor
     title: "Title (optional)",
-    show_logo: "Show icon",
     show_failed: "Show failed automations",
     show_linked: "Show unavailable linked entities",
     expand_failed: "Failed automations expanded by default",
@@ -127,7 +126,6 @@ const STRINGS = {
     no_registry: "Cette carte nécessite Home Assistant 2024.8 ou plus récent.",
     // Editor
     title: "Titre (optionnel)",
-    show_logo: "Afficher l'icône",
     show_failed: "Afficher les automatisations en échec",
     show_linked: "Afficher les entités liées indisponibles",
     expand_failed: "Automatisations en échec dépliées par défaut",
@@ -176,7 +174,6 @@ const STRINGS = {
     no_registry: "Diese Karte benötigt Home Assistant 2024.8 oder neuer.",
     // Editor
     title: "Titel (optional)",
-    show_logo: "Symbol anzeigen",
     show_failed: "Fehlgeschlagene Automatisierungen anzeigen",
     show_linked: "Nicht verfügbare verknüpfte Entitäten anzeigen",
     expand_failed: "Fehlgeschlagene Automatisierungen standardmäßig aufgeklappt",
@@ -225,7 +222,6 @@ const STRINGS = {
     no_registry: "Esta tarjeta requiere Home Assistant 2024.8 o posterior.",
     // Editor
     title: "Título (opcional)",
-    show_logo: "Mostrar el icono",
     show_failed: "Mostrar las automatizaciones fallidas",
     show_linked: "Mostrar las entidades vinculadas no disponibles",
     expand_failed: "Automatizaciones fallidas desplegadas por defecto",
@@ -276,7 +272,6 @@ const STRINGS = {
     no_registry: "Ова картица захтева Home Assistant 2024.8 или новији.",
     // Editor
     title: "Наслов (опционо)",
-    show_logo: "Прикажи иконицу",
     show_failed: "Прикажи неуспеле аутоматизације",
     show_linked: "Прикажи недоступне повезане ентитете",
     expand_failed: "Неуспеле аутоматизације подразумевано проширене",
@@ -327,7 +322,6 @@ const STRINGS = {
     no_registry: "Ova kartica zahteva Home Assistant 2024.8 ili noviji.",
     // Editor
     title: "Naslov (opciono)",
-    show_logo: "Prikaži ikonicu",
     show_failed: "Prikaži neuspele automatizacije",
     show_linked: "Prikaži nedostupne povezane entitete",
     expand_failed: "Neuspele automatizacije podrazumevano proširene",
@@ -376,7 +370,6 @@ const STRINGS = {
     no_registry: "Questa scheda richiede Home Assistant 2024.8 o successivo.",
     // Editor
     title: "Titolo (facoltativo)",
-    show_logo: "Mostra l'icona",
     show_failed: "Mostra le automazioni non riuscite",
     show_linked: "Mostra le entità collegate non disponibili",
     expand_failed: "Automazioni non riuscite espanse per impostazione predefinita",
@@ -425,7 +418,6 @@ const STRINGS = {
     no_registry: "Deze kaart vereist Home Assistant 2024.8 of nieuwer.",
     // Editor
     title: "Titel (optioneel)",
-    show_logo: "Pictogram tonen",
     show_failed: "Mislukte automatiseringen tonen",
     show_linked: "Niet-beschikbare gekoppelde entiteiten tonen",
     expand_failed: "Mislukte automatiseringen standaard uitgeklapt",
@@ -474,7 +466,6 @@ const STRINGS = {
     no_registry: "Este cartão requer o Home Assistant 2024.8 ou posterior.",
     // Editor
     title: "Título (opcional)",
-    show_logo: "Mostrar o ícone",
     show_failed: "Mostrar as automatizações falhadas",
     show_linked: "Mostrar as entidades associadas indisponíveis",
     expand_failed: "Automatizações falhadas expandidas por predefinição",
@@ -525,7 +516,6 @@ const STRINGS = {
     no_registry: "Ta karta wymaga Home Assistant 2024.8 lub nowszego.",
     // Editor
     title: "Tytuł (opcjonalnie)",
-    show_logo: "Pokaż ikonę",
     show_failed: "Pokaż nieudane automatyzacje",
     show_linked: "Pokaż niedostępne powiązane encje",
     expand_failed: "Nieudane automatyzacje domyślnie rozwinięte",
@@ -1230,11 +1220,7 @@ class AutomationMonitorBase extends HTMLElement {
     const status = this._status(data);
     return `
       <div class="header">
-        ${
-          c.show_logo !== false
-            ? `<div class="logo" aria-hidden="true">${svgIcon(ICONS.robot_confused)}</div>`
-            : ""
-        }
+        <div class="logo" aria-hidden="true">${svgIcon(ICONS.robot_confused)}</div>
         <div class="titles">
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
@@ -1597,7 +1583,6 @@ class AutomationMonitorEditorBase extends HTMLElement {
   // [name, default]
   static get toggles() {
     return [
-      ["show_logo", true],
       ["show_failed", true],
       ["show_linked", true],
     ];
