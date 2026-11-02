@@ -7,6 +7,7 @@ on:
     paths:
       - "src/**"
       - "scripts/**"
+      - "test/pixels.test.mjs"
       # The logo is inlined into the build, and package-lock.json pins the playwright used to render
       # (a Dependabot bump of playwright only touches package.json and the lock).
       - "images/**"
@@ -60,6 +61,10 @@ jobs:
           done
           [ -n "$ok" ] || { echo "::error::apt failed 3 times"; exit 1; }
           ffmpeg -version > /dev/null
+      # The comparison that decides which screenshots are rewritten (every channel, every frame), with the ffmpeg
+      # it decodes with: required here, skipped by npm test where ffmpeg is not installed.
+      - name: Test the screenshot comparison
+        run: REQUIRE_FFMPEG=1 node --test test/pixels.test.mjs
       - run: npm run build
       - name: Render screenshots
         run: |

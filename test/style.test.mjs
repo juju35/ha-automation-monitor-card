@@ -38,7 +38,7 @@ test("the error message (sensors not found / unavailable / old HA) is readable i
 });
 
 test("state-coloured texts (status chip, counters, streak tag, link hover) are readable in both themes", () => {
-  for (const cls of [".ok", ".warn", ".crit"]) check(FULL, [":host", cls, ".chip"]);
+  for (const cls of [".ok", ".warn", ".crit", ".na"]) check(FULL, [":host", cls, ".chip"]);
   for (const cls of [".warn", ".crit"]) {
     check(FULL, [":host", cls, ".counter", `.counter${cls}`, `.counter${cls} .n`]);
     check(MINI, [":host", cls, ".counter", `.counter${cls}`, `.counter${cls} .n`]);
@@ -76,4 +76,25 @@ test("prefers-reduced-motion stops the refresh spin and the chevron transition",
 
 test("no dead state colours or classes in the styles", () => {
   for (const name of ["--am-navy", "--am-idle", ".idle"]) assert.ok(!BASE_STYLE.includes(name), name);
+});
+
+// Narrow header rule shared by the cards: a truncating title block that keeps a few characters and does not take the
+// chip's room (flex-basis 0), a chip that only shrinks when the room is really missing (dot only when tiny), icon
+// buttons that never shrink.
+test("narrow header: the title keeps a few characters, the chip shrinks, the icon buttons do not", () => {
+  const rule = (sel) => BASE_STYLE.match(new RegExp(`(?:^|\\n)\\s*${sel.replace(/[.*]/g, "\\$&")} \\{([^}]*)\\}`))?.[1] ?? "";
+  assert.match(rule(".titles"), /flex: 1 1 0;/);
+  assert.match(rule(".titles"), /min-width: \d+ch/);
+  assert.match(rule(".name"), /text-overflow: ellipsis/);
+  assert.match(rule(".chip"), /flex: 0 1 auto/);
+  assert.match(rule(".chip"), /min-width: 0/);
+  assert.doesNotMatch(rule(".chip"), /max-width/);
+  assert.match(rule(".chip .txt"), /text-overflow: ellipsis/);
+  assert.match(BASE_STYLE, /:host\(\[tiny\]\) \.chip \.txt \{ display: none; \}/);
+  assert.match(BASE_STYLE, /:host\(\[compact\]\) \.logo \{[^}]*width: 28px/);
+  assert.match(BASE_STYLE, /:host\(\[nologo\]\) \.logo-link \{ display: none; \}/);
+  for (const s of [BASE_STYLE, FULL_STYLE]) assert.doesNotMatch(s.replace(/\/\*[\s\S]*?\*\//g, ""), /container-type:|container: [^;]*\/|@container/);
+  assert.match(rule(".refresh"), /flex: none/);
+  assert.match(BASE_STYLE, /\.zoom \{[^}]*flex: none/);
+  assert.match(FULL_STYLE, /\.section-title \.btn \{[^}]*flex: none/);
 });

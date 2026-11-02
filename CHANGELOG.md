@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.14.6 - 2026-11-01
+
+### Fixes
+- When the failed automations sensor (or the linked entities one) is unavailable, unknown or disabled, its counter shows a dash instead of a green 0, and the status chip says "Sensor unavailable" instead of "All good" when no other problem is known.
+- Narrow cards (6 columns of the Sections view, down to ~156 px on a phone, and the mini card at its default size) stay readable in every language: the title is no longer squeezed to a couple of letters (the status chip keeps its whole label from 245 px wide, the logo getting smaller below 320 px and hidden below 280 px, and is only shortened when the title is down to its last few characters; below 245 px it shrinks to its coloured dot, its text staying in the tooltip, so the Refresh and detail buttons stay in the card), the **Clear all** button no longer runs over the `3/3` count (icon only when narrow), the counters stack instead of letting long labels spill over the next one, and the name of an unavailable entity is no longer hidden by its "Unavailable 45 minutes ago" time, which moves under the name when both do not fit.
+- Plurals: "1 automation" and "1 problem" in every language, and the Serbian and Polish forms for 2-4 and 21, 22… ("2 аутоматизације", "21 проблем", "2 problemy", "5 problemów").
+- Screen readers: the section title is no longer a button containing the **Clear all** button; the fold toggle (with its expanded state) and **Clear all** are now side by side.
+- In a container that sizes the card by its content (layout-card, button-card, an `auto` grid column, an inline block) the cards keep their normal width instead of collapsing, and in a narrow `1fr` column (layout-card, grid card, horizontal stack), even wrapped in another element, they shrink to the column instead of overflowing it.
+- Opening the mini card's detail view from the keyboard gives the focus back to the button without scrolling the page.
+- Resizing a card across one of its width steps (first display on a phone included) no longer reports a "ResizeObserver loop completed with undelivered notifications" error to the page.
+
+### Maintenance
+- Screenshots and GIFs are rendered with the page clock paused and the spin and chevron angles set frame by frame, so an unchanged card gives byte-identical files, and the screenshot script only rewrites a file whose decoded pixels change: pull requests no longer recommit unchanged screenshots or GIFs.
+- One Biome version (2.6.4) for the pre-commit hook, its package, `biome.json` and the CI Biome job, which now reads the package version the hook installs; a test checks they stay aligned.
+- Tests of the screenshot comparison (a change in any colour channel, the alpha channel, the size or a later GIF frame rewrites the file; a new encoding of the same picture does not), run with ffmpeg by the screenshots workflow.
+- Browser tests measuring the cards from 245 px wide in all ten languages, and at phone widths (156 and 178 px) in English, Polish and Serbian, light and dark, with readable and unavailable sensors.
+
 ## 1.14.5 - 2026-11-01
 
 ### Added

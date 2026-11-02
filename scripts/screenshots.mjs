@@ -7,9 +7,15 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { states, entities, allGood, NOW } from "./mock-states.mjs";
+import { keep as keepPixels } from "./pixels.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/automation-monitor-card.js`, "utf8");
+// New renders are written here first, and only replace a committed screenshot whose pixels they change.
+const work = mkdtempSync(join(tmpdir(), "am-shots-"));
+
+// Moves the new render `tmp` to screenshots/`name` unless the committed file shows the same pixels (scripts/pixels.mjs).
+const keep = (tmp, name) => console.log(`screenshots/${name}${keepPixels(tmp, `${root}screenshots/${name}`) ? "" : " (unchanged)"}`);
 
 const THEMES = {
   light: {
@@ -48,11 +54,14 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 </style></head><body><div id="root"></div></body></html>`;
 
 // Mounts a shot's card on a fresh page (the card script declares its classes and custom elements once per page) and
-// returns it. With freezeClock, timers are frozen so a transient state (the refresh spin) holds still for capture.
-async function openCard(browser, s, { freezeClock = false } = {}) {
+// returns it. The page clock is paused at NOW, the epoch of the mock timestamps: the relative times ("12 minutes
+// ago") are the same in every shot and every frame however long the run takes (a running clock turned them into
+// "13 minutes ago" midway, and every GIF changed on each run), and a transient state (the refresh spin) holds still.
+async function openCard(browser, s) {
   const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
   page.on("pageerror", (err) => console.error(`${s.file}: ${err.message}`));
-  if (freezeClock) await page.clock.install({ time: NOW });
+  await page.clock.install({ time: NOW - 1000 });
+  await page.clock.pauseAt(NOW);
   await page.setContent(page_html(s.theme, s.width));
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
@@ -73,6 +82,10 @@ async function openCard(browser, s, { freezeClock = false } = {}) {
     },
     { type: s.type, config: s.config, states, entities, overrides: s.overrides, zoom: !!s.zoom }
   );
+  // The width attributes (narrow, compact…) are set on the animation frame after the card's ResizeObserver runs, and
+  // the paused clock holds animation frames: let a real frame go by (the observer), then run one frame of the clock.
+  await page.waitForTimeout(50);
+  await page.clock.runFor(20);
   return page;
 }
 
@@ -104,18 +117,19 @@ for (const s of shots) {
   await page.waitForTimeout(800);
   const box = await page.locator("#root").boundingBox();
   await page.screenshot({
-    path: `${root}screenshots/${s.file}.png`,
+    path: join(work, `${s.file}.png`),
     clip: { x: 0, y: 0, width: s.width + 32, height: Math.ceil(box.height) + 32 },
     animations: "disabled",
   });
-  console.log(`screenshots/${s.file}.png`);
+  keep(join(work, `${s.file}.png`), `${s.file}.png`);
   await page.close();
 }
 
 // The Refresh button spinning while the entity list rebuilds, recorded as a looping GIF — needs ffmpeg on PATH. The
-// clock is frozen so the transient spin holds; every animation is paused and stepped frame by frame, so the GIF is
-// identical whatever the machine's speed. Each GIF is rendered once per theme (X.gif light, X-dark.gif dark), with
-// the same setup.
+// clock is paused so the transient spin holds. Each frame sets the icon's rotation itself (inline transform, the CSS
+// animation turned off): pausing the CSS animation and setting its currentTime was not reliably reflected in the
+// screenshot (a compositor animation), so every run gave random angles and a new GIF. Each GIF is rendered once per
+// theme (X.gif light, X-dark.gif dark), with the same setup.
 const gifShot = (file, theme) => ({
   file: theme === "dark" ? `${file}-dark` : file,
   type: "automation-monitor-card",
@@ -126,19 +140,21 @@ const gifShot = (file, theme) => ({
 const FPS = 20;
 const SECONDS = 2;
 
-// Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small.
+// Halve the retina capture and build a per-clip palette: the colours stay clean and the file stays small. The
+// palette comes from the frames and the dithering is ordered (Bayer, no random noise): the same frames give the
+// same GIF.
 const encodeGif = (dir, file, width) => {
-  const out = `${root}screenshots/${file}.gif`;
+  const out = join(work, `${file}.gif`);
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
     "-vf", `scale=${width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
     "-loop", "0", out,
   ]);
   rmSync(dir, { recursive: true });
-  console.log(`screenshots/${file}.gif`);
+  keep(out, `${file}.gif`);
 };
 async function recordRefreshing(gif) {
-  const page = await openCard(browser, gif, { freezeClock: true });
+  const page = await openCard(browser, gif);
   await page.evaluate(() =>
     document
       .querySelector("#root")
@@ -151,22 +167,35 @@ async function recordRefreshing(gif) {
   const dir = mkdtempSync(join(tmpdir(), "am-frames-"));
   const frames = Math.round(FPS * SECONDS);
   for (let i = 0; i < frames; i++) {
-    await page.evaluate((t) => {
-      for (const a of document.getAnimations()) {
-        a.pause();
-        a.currentTime = t;
-      }
-    }, (i * 1000) / FPS);
+    // am-spin: one turn per second, linear.
+    await page.evaluate((deg) => {
+      const icon = document.querySelector("#root").firstElementChild.shadowRoot.querySelector(".refresh.spin .icon");
+      icon.style.animation = "none";
+      icon.style.transform = `rotate(${deg}deg)`;
+    }, (((i * 1000) / FPS) % 1000) * 0.36);
     await page.screenshot({ path: join(dir, `f${String(i).padStart(3, "0")}.png`), clip });
   }
   await page.close();
   encodeGif(dir, gif.file, clip.width);
 }
 
+// CSS "ease" (cubic-bezier(.25, .1, .25, 1)): progress at time fraction x, solved by bisection.
+const ease = (x) => {
+  const bez = (t, a, b) => 3 * (1 - t) ** 2 * t * a + 3 * (1 - t) * t ** 2 * b + t ** 3;
+  let lo = 0;
+  let hi = 1;
+  for (let k = 0; k < 40; k++) {
+    const mid = (lo + hi) / 2;
+    if (bez(mid, 0.25, 0.25) < x) lo = mid;
+    else hi = mid;
+  }
+  return bez((lo + hi) / 2, 0.1, 1);
+};
+
 // The other animation of the card: a click on a section title folds or unfolds its list, turning the
-// chevron (.2s transition). The transitions are paused and stepped frame by frame like the spin above.
+// chevron (.2s ease transition). Like the spin above, each frame sets the chevron's angle itself.
 async function recordFolding(fold) {
-  const page = await openCard(browser, fold, { freezeClock: true });
+  const page = await openCard(browser, fold);
   const click = (sel) =>
     page.evaluate((sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).click(), sel);
   // Unfold both sections once to size the clip on the tallest layout, then fold them back.
@@ -184,21 +213,30 @@ async function recordFolding(fold) {
   const hold = async (frames) => {
     for (let k = 0; k < frames; k++) await shoot();
   };
-  // Steps the chevron transition the click just started, then jumps it to its end state.
+  // Clicks a section title and steps its chevron from -90deg (folded) to 0 or back, then leaves it to the CSS
+  // (already at the same angle, so nothing animates).
+  const chevron = (sel, deg) =>
+    page.evaluate(
+      ({ sel, deg }) => {
+        const icon = document.querySelector("#root").firstElementChild.shadowRoot.querySelector(`${sel} .chevron`);
+        icon.style.transition = "none";
+        icon.style.transform = deg === null ? "" : `rotate(${deg}deg)`;
+      },
+      { sel, deg }
+    );
   const turn = async (sel) => {
+    const opening = await page.evaluate(
+      (sel) => document.querySelector("#root").firstElementChild.shadowRoot.querySelector(sel).classList.contains("closed"),
+      sel
+    );
     await click(sel);
-    for (let k = 0; k <= Math.round(FPS * 0.2); k++) {
-      await page.evaluate((t) => {
-        for (const a of document.getAnimations()) {
-          a.pause();
-          a.currentTime = t;
-        }
-      }, (k * 1000) / FPS);
+    const steps = Math.round(FPS * 0.2);
+    for (let k = 0; k <= steps; k++) {
+      const p = ease(k / steps);
+      await chevron(sel, opening ? -90 * (1 - p) : -90 * p);
       await shoot();
     }
-    await page.evaluate(() => {
-      for (const a of document.getAnimations()) a.finish();
-    });
+    await chevron(sel, null);
   };
   await hold(6); // both sections folded
   await turn('[data-section="failed"]');
@@ -216,3 +254,4 @@ for (const theme of ["light", "dark"]) {
   await recordFolding(gifShot("folding", theme));
 }
 await browser.close();
+rmSync(work, { recursive: true, force: true });

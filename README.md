@@ -21,7 +21,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 ## Features
 
 - Two cards: a full **Automation Monitor Card** and a compact **Automation Monitor Mini Card**
-- Overall status at a glance: all good, or the number of problems
+- Overall status at a glance: all good, the number of problems, or "Sensor unavailable" when a sensor of the integration cannot be read (its counter then shows a dash instead of 0)
 - Counters of failed automations and unavailable linked entities; a list is only shown when it has something to show
 - Failed automations: name, time of the last failure, error message, failed step and consecutive failures
 - **Trace** and **Edit** buttons opening the automation's trace and editor in Home Assistant
@@ -33,6 +33,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
 - Visual editor in the dashboard UI for both cards (no YAML needed)
+- Narrow cards (6 columns of the Sections view, the mini card's default size, down to ~156 px on a phone) stay readable: below ~384 px **Clear all** shows only its icon and the counters stack; the logo gets smaller below 320 px and is hidden below 280 px, so the status chip keeps its whole label; below 245 px the chip shrinks to its dot (its text stays in the tooltip)
 - Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish
 - Single file, no external dependency, the logo is embedded
 
