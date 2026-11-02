@@ -31,11 +31,10 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - Detail button at the top right of the mini card: it switches to the full card and back; a click anywhere outside the card brings the compact view back
 - Failed automations and unavailable linked entities are folded by default: click the section title to unfold them; long lists are cut to a configurable number of items, with a "Show more" button
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
-- Click the Automation Monitor logo to open the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor)
 - Visual editor in the dashboard UI for both cards (no YAML needed)
-- Narrow cards (6 columns of the Sections view, the mini card's default size, down to ~156 px on a phone) stay readable: below ~384 px **Clear all** shows only its icon and the counters stack; the logo gets smaller below 320 px and is hidden below 280 px, so the status chip keeps its whole label; below 245 px the chip shrinks to its dot (its text stays in the tooltip)
+- Narrow cards (6 columns of the Sections view, the mini card's default size, down to ~156 px on a phone) stay readable: below ~384 px **Clear all** shows only its icon and the counters stack; the icon gets smaller below 320 px and is hidden below 280 px, so the status chip keeps its whole label; below 245 px the chip shrinks to its dot (its text stays in the tooltip)
 - Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish
-- Single file, no external dependency, the logo is embedded
+- Single file, no external dependency
 
 ## Prerequisites
 
@@ -117,7 +116,7 @@ language: fr
 | Option | Card | Default | Description |
 |---|---|---|---|
 | `title` | both | `Automation Monitor` | Card title |
-| `show_logo` | both | `true` | Show the Automation Monitor logo (opens the [integration's page](https://github.com/olli-dot-dev/ha-automation-monitor) in a new tab) |
+| `show_logo` | both | `true` | Show the robot icon before the title |
 | `show_failed` | both | `true` | Failed automations (counter and list) |
 | `show_linked` | both | `true` | Unavailable linked entities (counter and list) |
 | `expand_failed` | full | `false` | Failed automations expanded when the card loads (click the section title to fold / unfold) |

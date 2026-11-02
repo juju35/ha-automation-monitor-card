@@ -8,12 +8,14 @@
  */
 
 const VERSION = "__VERSION__";
-const IMG_LOGO = "__IMG_LOGO__";
-const INTEGRATION_SITE = "https://github.com/olli-dot-dev/ha-automation-monitor";
+// Header icon: the tinted round icon of the project page on the showcase site.
+const ACCENT = "#e5484d";
 const PLATFORM = "automation_monitor";
 const DEFAULT_MAX_ITEMS = 5;
 
 const ICONS = {
+  robot_confused:
+    "M19 8H20V9H19V8M20 5H19V7H20V6H20.5C20.78 6 21 5.78 21 5.5V3.5C21 3.22 20.78 3 20.5 3H18V4H20V5M17 3H16V7H17V3M13.5 15.5C13.5 16.61 14.4 17.5 15.5 17.5S17.5 16.61 17.5 15.5 16.61 13.5 15.5 13.5 13.5 14.4 13.5 15.5M17 8H16V9H17V8M22 14H21C21 12.5 20.53 11.13 19.74 10H16.97C18.19 10.91 19 12.36 19 14V16H21V17H19V20H5V17H3V16H5V14C5 11.24 7.24 9 10 9H14C14.34 9 14.68 9.04 15 9.1V7.08C14.67 7.03 14.34 7 14 7H13V5.73C13.6 5.39 14 4.74 14 4C14 2.9 13.11 2 12 2S10 2.9 10 4C10 4.74 10.4 5.39 11 5.73V7H10C6.13 7 3 10.13 3 14H2C1.45 14 1 14.45 1 15V18C1 18.55 1.45 19 2 19H3V20C3 21.11 3.9 22 5 22H19C20.11 22 21 21.11 21 20V19H22C22.55 19 23 18.55 23 18V15C23 14.45 22.55 14 22 14M8.5 13.5C7.4 13.5 6.5 14.4 6.5 15.5S7.4 17.5 8.5 17.5 10.5 16.61 10.5 15.5 9.61 13.5 8.5 13.5Z",
   robot_alert:
     "M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z",
   disconnect:
@@ -76,7 +78,7 @@ const STRINGS = {
     no_registry: "This card needs Home Assistant 2024.8 or later.",
     // Editor
     title: "Title (optional)",
-    show_logo: "Show Automation Monitor logo",
+    show_logo: "Show icon",
     show_failed: "Show failed automations",
     show_linked: "Show unavailable linked entities",
     expand_failed: "Failed automations expanded by default",
@@ -125,7 +127,7 @@ const STRINGS = {
     no_registry: "Cette carte nécessite Home Assistant 2024.8 ou plus récent.",
     // Editor
     title: "Titre (optionnel)",
-    show_logo: "Afficher le logo Automation Monitor",
+    show_logo: "Afficher l'icône",
     show_failed: "Afficher les automatisations en échec",
     show_linked: "Afficher les entités liées indisponibles",
     expand_failed: "Automatisations en échec dépliées par défaut",
@@ -174,7 +176,7 @@ const STRINGS = {
     no_registry: "Diese Karte benötigt Home Assistant 2024.8 oder neuer.",
     // Editor
     title: "Titel (optional)",
-    show_logo: "Automation-Monitor-Logo anzeigen",
+    show_logo: "Symbol anzeigen",
     show_failed: "Fehlgeschlagene Automatisierungen anzeigen",
     show_linked: "Nicht verfügbare verknüpfte Entitäten anzeigen",
     expand_failed: "Fehlgeschlagene Automatisierungen standardmäßig aufgeklappt",
@@ -223,7 +225,7 @@ const STRINGS = {
     no_registry: "Esta tarjeta requiere Home Assistant 2024.8 o posterior.",
     // Editor
     title: "Título (opcional)",
-    show_logo: "Mostrar el logotipo de Automation Monitor",
+    show_logo: "Mostrar el icono",
     show_failed: "Mostrar las automatizaciones fallidas",
     show_linked: "Mostrar las entidades vinculadas no disponibles",
     expand_failed: "Automatizaciones fallidas desplegadas por defecto",
@@ -274,7 +276,7 @@ const STRINGS = {
     no_registry: "Ова картица захтева Home Assistant 2024.8 или новији.",
     // Editor
     title: "Наслов (опционо)",
-    show_logo: "Прикажи Automation Monitor лого",
+    show_logo: "Прикажи иконицу",
     show_failed: "Прикажи неуспеле аутоматизације",
     show_linked: "Прикажи недоступне повезане ентитете",
     expand_failed: "Неуспеле аутоматизације подразумевано проширене",
@@ -325,7 +327,7 @@ const STRINGS = {
     no_registry: "Ova kartica zahteva Home Assistant 2024.8 ili noviji.",
     // Editor
     title: "Naslov (opciono)",
-    show_logo: "Prikaži Automation Monitor logo",
+    show_logo: "Prikaži ikonicu",
     show_failed: "Prikaži neuspele automatizacije",
     show_linked: "Prikaži nedostupne povezane entitete",
     expand_failed: "Neuspele automatizacije podrazumevano proširene",
@@ -374,7 +376,7 @@ const STRINGS = {
     no_registry: "Questa scheda richiede Home Assistant 2024.8 o successivo.",
     // Editor
     title: "Titolo (facoltativo)",
-    show_logo: "Mostra il logo di Automation Monitor",
+    show_logo: "Mostra l'icona",
     show_failed: "Mostra le automazioni non riuscite",
     show_linked: "Mostra le entità collegate non disponibili",
     expand_failed: "Automazioni non riuscite espanse per impostazione predefinita",
@@ -423,7 +425,7 @@ const STRINGS = {
     no_registry: "Deze kaart vereist Home Assistant 2024.8 of nieuwer.",
     // Editor
     title: "Titel (optioneel)",
-    show_logo: "Automation Monitor-logo tonen",
+    show_logo: "Pictogram tonen",
     show_failed: "Mislukte automatiseringen tonen",
     show_linked: "Niet-beschikbare gekoppelde entiteiten tonen",
     expand_failed: "Mislukte automatiseringen standaard uitgeklapt",
@@ -472,7 +474,7 @@ const STRINGS = {
     no_registry: "Este cartão requer o Home Assistant 2024.8 ou posterior.",
     // Editor
     title: "Título (opcional)",
-    show_logo: "Mostrar o logótipo do Automation Monitor",
+    show_logo: "Mostrar o ícone",
     show_failed: "Mostrar as automatizações falhadas",
     show_linked: "Mostrar as entidades associadas indisponíveis",
     expand_failed: "Automatizações falhadas expandidas por predefinição",
@@ -523,7 +525,7 @@ const STRINGS = {
     no_registry: "Ta karta wymaga Home Assistant 2024.8 lub nowszego.",
     // Editor
     title: "Tytuł (opcjonalnie)",
-    show_logo: "Pokaż logo Automation Monitor",
+    show_logo: "Pokaż ikonę",
     show_failed: "Pokaż nieudane automatyzacje",
     show_linked: "Pokaż niedostępne powiązane encje",
     expand_failed: "Nieudane automatyzacje domyślnie rozwinięte",
@@ -822,12 +824,14 @@ const BASE_STYLE = `
      only its dot (its text stays in title and aria-label), so the title stays readable and the buttons stay in the
      card. */
   :host([compact]) .header { gap: 6px; }
-  :host([compact]) .logo { height: 28px; width: 28px; border-radius: 7px; }
-  :host([nologo]) .logo-link { display: none; }
+  :host([compact]) .logo { height: 28px; width: 28px; }
+  :host([compact]) .logo .icon { width: 16px; height: 16px; }
+  :host([nologo]) .logo { display: none; }
   :host([tiny]) .chip .txt { display: none; }
   :host([tiny]) .chip { padding: 4px; }
-  .logo { height: 40px; width: 40px; border-radius: 10px; flex: none; object-fit: contain; }
-  a.logo-link { display: flex; flex: none; }
+  .logo { height: 40px; width: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
+          color: ${ACCENT}; background: color-mix(in srgb, ${ACCENT} 16%, transparent); }
+  .logo .icon { width: 24px; height: 24px; fill: currentColor; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
              flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }
   .refresh:hover { background: var(--secondary-background-color, rgba(127,127,127,.12)); color: var(--am-blue); }
@@ -1228,7 +1232,7 @@ class AutomationMonitorBase extends HTMLElement {
       <div class="header">
         ${
           c.show_logo !== false
-            ? `<a class="logo-link" href="${INTEGRATION_SITE}" target="_blank" rel="noopener noreferrer" title="Automation Monitor"><img class="logo" src="${IMG_LOGO}" alt="Automation Monitor"></a>`
+            ? `<div class="logo" aria-hidden="true">${svgIcon(ICONS.robot_confused)}</div>`
             : ""
         }
         <div class="titles">
@@ -1476,7 +1480,8 @@ class AutomationMonitorCard extends AutomationMonitorBase {
 // ---------------------------------------------------------------------------
 
 const MINI_STYLE = `
-  .logo { height: 32px; width: 32px; border-radius: 8px; }
+  .logo { height: 32px; width: 32px; }
+  .logo .icon { width: 18px; height: 18px; }
   .name { font-size: 16px; }
   /* A narrower Refresh button (same icon) leaves the title room for the detail button. */
   .refresh { width: 28px; height: 28px; }
