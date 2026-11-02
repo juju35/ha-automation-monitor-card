@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- Cards: the header shows the tinted round icon of the project's showcase page (red `mdi:robot-confused-outline`) instead of the Automation Monitor logo, like the generic icons of the other cards.
+- Cards: the `show_logo` option is removed: the icon is always shown (still hidden on cards narrower than about 280 px). An existing `show_logo` line is ignored.
+
 ## 1.14.6 - 2026-11-01
 
 ### Fixes
