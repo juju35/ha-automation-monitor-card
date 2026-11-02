@@ -8,8 +8,6 @@
  */
 
 const VERSION = "__VERSION__";
-// Header icon: the tinted round icon of the project page on the showcase site.
-const ACCENT = "#e5484d";
 const PLATFORM = "automation_monitor";
 const DEFAULT_MAX_ITEMS = 5;
 
@@ -820,7 +818,7 @@ const BASE_STYLE = `
   :host([tiny]) .chip .txt { display: none; }
   :host([tiny]) .chip { padding: 4px; }
   .logo { height: 40px; width: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
-          color: ${ACCENT}; background: color-mix(in srgb, ${ACCENT} 16%, transparent); }
+          color: var(--c, var(--am-ok)); background: color-mix(in srgb, var(--c, var(--am-ok)) 16%, transparent); }
   .logo .icon { width: 24px; height: 24px; fill: currentColor; }
   .refresh { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; padding: 0;
              flex: none; cursor: pointer; background: transparent; color: var(--secondary-text-color); }
@@ -1220,7 +1218,7 @@ class AutomationMonitorBase extends HTMLElement {
     const status = this._status(data);
     return `
       <div class="header">
-        <div class="logo" aria-hidden="true">${svgIcon(ICONS.robot_confused)}</div>
+        <div class="logo ${status.cls}" aria-hidden="true">${svgIcon(ICONS.robot_confused)}</div>
         <div class="titles">
           <div class="name">${esc(c.title || "Automation Monitor")}</div>
           ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
