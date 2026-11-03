@@ -36,6 +36,12 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish
 - Single file, no external dependency
 
+## Supported integrations
+
+| Integration | What the cards show |
+|---|---|
+| [Automation Monitor](https://github.com/olli-dot-dev/ha-automation-monitor) (HACS, custom repository) | Overall status, failed automations (last failure, error, failed step, consecutive failures) with **Clear** (`automation_monitor.reset`), unavailable linked entities and the automations, scripts and scenes using them, **Refresh** (`automation_monitor.rebuild_linked_entities`) |
+
 ## Prerequisites
 
 The [Automation Monitor integration](https://github.com/olli-dot-dev/ha-automation-monitor) must be installed and configured (it is available in HACS as a custom repository), with Home Assistant 2024.8 or later.
