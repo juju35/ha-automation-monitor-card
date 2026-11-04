@@ -18,7 +18,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 
 | Automation Monitor Card | Automation Monitor Mini Card |
 |---|---|
-| ![automation-monitor-card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open.png) | ![automation-monitor-mini-card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open.png" alt="automation-monitor-card" width="315"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card.png" alt="automation-monitor-mini-card" width="400"> |
 
 ## Features
 
@@ -144,32 +144,32 @@ While the entity list rebuilds, the card animates: the Refresh button spins unti
 
 | Light | Dark |
 |---|---|
-| ![refresh animation](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing.gif) | ![refresh animation dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing-dark.gif) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing.gif" alt="refresh animation" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing-dark.gif" alt="refresh animation dark" width="400"> |
 
 A click on a section title folds or unfolds its list, turning the chevron.
 
 | Light | Dark |
 |---|---|
-| ![fold animation](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding.gif) | ![fold animation dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding-dark.gif) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding.gif" alt="fold animation" width="315"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding-dark.gif" alt="fold animation dark" width="315"> |
 
 | Light (lists folded by default) | Dark (lists folded by default) |
 |---|---|
-| ![card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card.png) | ![card dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-dark.png) |
-| ![mini card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card.png) | ![mini card dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-dark.png) |
-| ![mini card zoomed in](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom.png) | ![mini card zoomed in dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card.png" alt="card" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-dark.png" alt="card dark" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card.png" alt="mini card" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-dark.png" alt="mini card dark" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom.png" alt="mini card zoomed in" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom-dark.png" alt="mini card zoomed in dark" width="400"> |
 
 Lists unfolded:
 
 | Light | Dark |
 |---|---|
-| ![card unfolded](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open.png) | ![card unfolded dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open.png" alt="card unfolded" width="315"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open-dark.png" alt="card unfolded dark" width="315"> |
 
 When everything works (Automation Monitor Card, then Automation Monitor Mini Card):
 
 | Light | Dark |
 |---|---|
-| ![card ok](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok.png) | ![card ok dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok-dark.png) |
-| ![mini card ok](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok.png) | ![mini card ok dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok.png" alt="card ok" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok-dark.png" alt="card ok dark" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok.png" alt="mini card ok" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok-dark.png" alt="mini card ok dark" width="400"> |
 
 ## How it works
 
