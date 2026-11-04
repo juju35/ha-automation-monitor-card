@@ -5,10 +5,10 @@
 [![Validate](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/validate.yml)
 [![Lint](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/lint.yml/badge.svg)](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/lint.yml)
 [![Release](https://img.shields.io/github/v/release/juju35/ha-automation-monitor-card)](https://github.com/juju35/ha-automation-monitor-card/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/juju35/ha-automation-monitor-card/blob/main/LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/julienstep9)
 
-<p align="center"><img src="images/logo.png" alt="Automation Monitor" width="96"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/images/logo.png" alt="Automation Monitor" width="96"></p>
 
 Lovelace cards for Home Assistant showing what the [Automation Monitor](https://github.com/olli-dot-dev/ha-automation-monitor) integration detects: automations whose last run failed, and entities used by your automations, scripts and scenes that are stuck unavailable, with the error details and one-click access to the trace and the editor.
 
@@ -144,32 +144,32 @@ While the entity list rebuilds, the card animates: the Refresh button spins unti
 
 | Light | Dark |
 |---|---|
-| ![refresh animation](screenshots/refreshing.gif) | ![refresh animation dark](screenshots/refreshing-dark.gif) |
+| ![refresh animation](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing.gif) | ![refresh animation dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/refreshing-dark.gif) |
 
 A click on a section title folds or unfolds its list, turning the chevron.
 
 | Light | Dark |
 |---|---|
-| ![fold animation](screenshots/folding.gif) | ![fold animation dark](screenshots/folding-dark.gif) |
+| ![fold animation](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding.gif) | ![fold animation dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/folding-dark.gif) |
 
 | Light (lists folded by default) | Dark (lists folded by default) |
 |---|---|
-| ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
-| ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
-| ![mini card zoomed in](screenshots/mini-card-zoom.png) | ![mini card zoomed in dark](screenshots/mini-card-zoom-dark.png) |
+| ![card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card.png) | ![card dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-dark.png) |
+| ![mini card](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card.png) | ![mini card dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-dark.png) |
+| ![mini card zoomed in](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom.png) | ![mini card zoomed in dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-zoom-dark.png) |
 
 Lists unfolded:
 
 | Light | Dark |
 |---|---|
-| ![card unfolded](screenshots/card-open.png) | ![card unfolded dark](screenshots/card-open-dark.png) |
+| ![card unfolded](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open.png) | ![card unfolded dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-open-dark.png) |
 
 When everything works (Automation Monitor Card, then Automation Monitor Mini Card):
 
 | Light | Dark |
 |---|---|
-| ![card ok](screenshots/card-ok.png) | ![card ok dark](screenshots/card-ok-dark.png) |
-| ![mini card ok](screenshots/mini-card-ok.png) | ![mini card ok dark](screenshots/mini-card-ok-dark.png) |
+| ![card ok](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok.png) | ![card ok dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/card-ok-dark.png) |
+| ![mini card ok](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok.png) | ![mini card ok dark](https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/screenshots/mini-card-ok-dark.png) |
 
 ## How it works
 
@@ -195,7 +195,7 @@ npm run screenshots  # renders the cards (and the GIFs, needs ffmpeg) with mock 
 ### Releasing
 
 1. Bump `version` in `package.json`
-2. Add a `## <version>` section at the top of [CHANGELOG.md](CHANGELOG.md)
+2. Add a `## <version>` section at the top of [CHANGELOG.md](https://github.com/juju35/ha-automation-monitor-card/blob/main/CHANGELOG.md)
 3. Push to `main`: the **Release** workflow builds the card, creates the tag and the GitHub release with the changelog section as notes, and attaches `automation-monitor-card.js`
 
 ## Translations
@@ -235,7 +235,7 @@ The Automation Monitor integration and its logo are by [olli-dot-dev](https://gi
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/juju35/ha-automation-monitor-card/blob/main/LICENSE)
 
 ## Support
 
