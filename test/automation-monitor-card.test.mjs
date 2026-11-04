@@ -635,3 +635,52 @@ test("the header icon takes the status color: green when all is good, red on a f
   assert.match(card(baseStates())._render(), /<div class="logo crit" aria-hidden="true">/);
   assert.match(card(naStates("unavailable"))._render(), /<div class="logo na" aria-hidden="true">/);
 });
+
+test("hide_when_ok hides the cards while all is good, and tells Lovelace; never for an unreadable sensor nor while editing", () => {
+  const ok = baseStates();
+  ok["sensor.failed"] = { ...ok["sensor.failed"], state: "0", attributes: { automations: [] } };
+  // The DOM patch is not stubbed: the visibility step of _update is run on its own.
+  const make = (Card, config, states) => {
+    const el = new Card();
+    el.events = [];
+    el.dispatchEvent = (ev) => el.events.push(ev.type);
+    el._config = config;
+    el._hass = { states, entities, devices, language: "en" };
+    el._applyVisibility();
+    return el;
+  };
+  for (const Card of [AutomationMonitorCard, AutomationMonitorMiniCard]) {
+    const el = make(Card, { hide_when_ok: true }, ok);
+    assert.equal(el.hidden, true, Card.name);
+    assert.deepEqual(el.events, ["card-visibility-changed"], Card.name);
+    // A failure: shown again, Lovelace told once more.
+    el._hass = { states: baseStates(), entities, devices, language: "en" };
+    el._applyVisibility();
+    assert.equal(el.hidden, false, Card.name);
+    assert.equal(el.events.length, 2, Card.name);
+    // Edited dashboard or card editor preview: always shown.
+    el._hass = { states: ok, entities, devices, language: "en" };
+    el._applyVisibility();
+    assert.equal(el.hidden, true, Card.name);
+    el._editMode = true;
+    el._applyVisibility();
+    assert.equal(el.hidden, false, Card.name);
+    el._editMode = false;
+    el._preview = true;
+    el._applyVisibility();
+    assert.equal(el.hidden, false, Card.name);
+  }
+  // A sensor that can't be read is not "all good"; the option is off by default.
+  const na = baseStates();
+  na["sensor.failed"] = { ...na["sensor.failed"], state: "unavailable", attributes: {} };
+  na["sensor.linked"] = { ...na["sensor.linked"], state: "unavailable", attributes: {} };
+  assert.ok(!make(AutomationMonitorCard, { hide_when_ok: true }, na).hidden);
+  assert.ok(!make(AutomationMonitorCard, {}, ok).hidden);
+});
+
+test("hide_when_ok is offered in both editors, off by default", () => {
+  const { AutomationMonitorMiniCardEditor } = load("automation-monitor-card.js", ["AutomationMonitorMiniCardEditor"]);
+  for (const Editor of [AutomationMonitorCardEditor, AutomationMonitorMiniCardEditor]) {
+    assert.ok(Editor.toggles.some(([n, d]) => n === "hide_when_ok" && d === false), Editor.name);
+  }
+});
