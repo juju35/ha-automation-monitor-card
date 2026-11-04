@@ -167,13 +167,13 @@ test("mini card at its default size and wider: readable title, nothing overflows
   assert.deepEqual(problems, []);
 });
 
-// Phone: 6 columns of the Sections view are 156-178 px wide. Every card and variant, en / pl / sr-Latn, light and
-// dark, readable and unavailable sensors.
+// Phone: 6 columns of the Sections view are 156-178 px wide. Every card and variant, light and dark, readable and
+// unavailable sensors; en / pl / sr-Latn and the longest new languages (bg, hu, el: their item buttons).
 for (const dark of [false, true])
   for (const type of ["automation-monitor-card", "automation-monitor-mini-card", "zoomed"])
     test(`${type} at phone width (${PHONE.join(", ")} and 245 px), ${dark ? "dark" : "light"}: nothing overflows`, async (t) => {
       if (skip) return t.skip(skip);
-      const problems = await measure(type, { expand_failed: true, expand_linked: true }, { langs: ["en", "pl", "sr-Latn"], widths: [...PHONE, 245], variants: VARIANTS, dark });
+      const problems = await measure(type, { expand_failed: true, expand_linked: true }, { langs: ["en", "pl", "sr-Latn", "bg", "hu", "el"], widths: [...PHONE, 245], variants: VARIANTS, dark });
       assert.deepEqual(problems, []);
     });
 
