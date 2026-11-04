@@ -10,7 +10,7 @@ import { after, before, test } from "node:test";
 import { entities, states } from "../scripts/mock-states.mjs";
 
 const src = readFileSync(new URL("../src/automation-monitor-card.js", import.meta.url), "utf8");
-const LANGS = ["en", "fr", "de", "es", "it", "nl", "pt", "pl", "sr", "sr-Latn", "ro", "da", "sv", "bg", "ru", "uk", "hu", "ga", "sk", "cs", "sl", "mt", "lv", "el"];
+const LANGS = ["en", "fr", "de", "es", "it", "nl", "pt", "pl", "sr", "sr-Latn", "ro", "da", "sv", "bg", "ru", "uk", "hu", "sk", "cs", "sl", "lv", "el"];
 const WIDTHS = [245, 300, 360, 420, 500];
 // Phone widths of 6 columns of the Sections view (half of a 320-364 px section, less the gap).
 const PHONE = [156, 178];

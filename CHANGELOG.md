@@ -3,7 +3,7 @@
 ## 1.15.1 - 2026-11-04
 
 ### Added
-- Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Irish, Slovak, Czech, Slovenian, Maltese, Latvian and Greek translations: `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `ga`, `sk`, `cs`, `sl`, `mt`, `lv` and `el`, picked automatically from the Home Assistant language and offered in the editor's language list, with their plural forms for the counters ("2 проблемы", "5 problémů", "2 težavi"…).
+- Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek translations: `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `sk`, `cs`, `sl`, `lv` and `el`, picked automatically from the Home Assistant language and offered in the editor's language list, with their plural forms for the counters ("2 проблемы", "5 problémů", "2 težavi"…).
 
 ## 1.15.0 - 2026-11-04
 

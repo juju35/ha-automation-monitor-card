@@ -276,7 +276,7 @@ test("zoom: false removes the mini card detail button, the full card has none", 
   assert.doesNotMatch(card(baseStates())._render(), /class="zoom"/);
 });
 
-const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl", "ro", "da", "sv", "bg", "ru", "uk", "hu", "ga", "sk", "cs", "sl", "mt", "lv", "el"];
+const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl", "ro", "da", "sv", "bg", "ru", "uk", "hu", "sk", "cs", "sl", "lv", "el"];
 
 test("I18N parity: every language has exactly the English keys and placeholders, and no empty text", () => {
   // Plural forms only some languages need ("<key>_few"…) come on top of a key every language has.
@@ -320,7 +320,6 @@ test("the language resolves to the full code, then the part before the dash, the
   assert.equal(of("uk-UA"), "uk");
   assert.equal(of("cs-CZ"), "cs");
   assert.equal(of("el-GR"), "el");
-  assert.equal(of("ga"), "ga");
   assert.equal(of("ja"), "en");
   // The card option comes first, then hass.locale, then hass.language.
   assert.equal(lang({ language: "fr", locale: { language: "sr-Latn" } }, {}), "sr-Latn");
@@ -382,11 +381,9 @@ test("the editor offers every language of the card, with its own name", () => {
     ru: "Русский",
     uk: "Українська",
     hu: "Magyar",
-    ga: "Gaeilge",
     sk: "Slovenčina",
     cs: "Čeština",
     sl: "Slovenščina",
-    mt: "Malti",
     lv: "Latviešu",
     el: "Ελληνικά",
   };
@@ -588,7 +585,7 @@ test("with one sensor unavailable, the problems of the other are still counted",
   assert.match(html, /class="n">2</);
 });
 
-test("plural forms: 1 is singular in every language, Slavic, Baltic and Maltese languages use their other forms", () => {
+test("plural forms: 1 is singular in every language, Slavic and Baltic languages use their other forms", () => {
   const el = card(baseStates());
   const say = (language, key, n) => {
     el._config = { language };
@@ -612,18 +609,16 @@ test("plural forms: 1 is singular in every language, Slavic, Baltic and Maltese 
     ru: "1 автоматизация",
     uk: "1 автоматизація",
     hu: "1 automatizálás",
-    ga: "1 uathoibriú",
     sk: "1 automatizácia",
     cs: "1 automatizace",
     sl: "1 avtomatizacija",
-    mt: "1 awtomazzjoni",
     lv: "1 automatizācija",
     el: "1 αυτοματισμός",
   };
   for (const [l, text] of Object.entries(ONE)) assert.equal(say(l, "automations", 1), text, l);
   // "1 problem": never the plural text with 1 in it.
-  // Swedish, Hungarian and Maltese use the same word: "1 problem" / "5 problem", "1 probléma", "20 problema".
-  const SAME = ["sv", "hu", "mt"];
+  // Swedish and Hungarian use the same word: "1 problem" / "5 problem", "1 probléma".
+  const SAME = ["sv", "hu"];
   for (const l of Object.keys(ONE).filter((l) => !SAME.includes(l))) assert.notEqual(say(l, "n_problems", 1), STRINGS[l].n_problems.replace("{n}", "1"), l);
   for (const l of SAME) assert.equal(say(l, "n_problems", 1), STRINGS[l].n_problems_one.replace("{n}", "1"), l);
   const cases = {
@@ -643,7 +638,6 @@ test("plural forms: 1 is singular in every language, Slavic, Baltic and Maltese 
     sk: { automations: ["1 automatizácia", "2 automatizácie", "5 automatizácií", "21 automatizácií", "22 automatizácií"] },
     sl: { n_problems: ["1 težava", "2 težavi", "5 težav", "21 težav", "22 težav"], automations: ["1 avtomatizacija", "2 avtomatizaciji", "5 avtomatizacij", "21 avtomatizacij", "22 avtomatizacij"] },
     lv: { n_problems: ["1 problēma", "2 problēmas", "5 problēmas", "21 problēma", "22 problēmas"] },
-    mt: { automations: ["1 awtomazzjoni", "2 awtomazzjonijiet", "5 awtomazzjonijiet", "21 awtomazzjoni", "22 awtomazzjoni"] },
     en: { automations: ["1 automation", "2 automations", "5 automations", "21 automations", "22 automations"], n_problems: ["1 problem", "2 problems", "5 problems", "21 problems", "22 problems"] },
   };
   for (const [l, keys] of Object.entries(cases))
