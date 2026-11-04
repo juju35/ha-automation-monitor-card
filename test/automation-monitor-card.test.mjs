@@ -276,7 +276,7 @@ test("zoom: false removes the mini card detail button, the full card has none", 
   assert.doesNotMatch(card(baseStates())._render(), /class="zoom"/);
 });
 
-const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl"];
+const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl", "ro", "da", "sv", "bg", "ru", "uk", "hu", "ga", "sk", "cs", "sl", "mt", "lv", "el"];
 
 test("I18N parity: every language has exactly the English keys and placeholders, and no empty text", () => {
   // Plural forms only some languages need ("<key>_few"…) come on top of a key every language has.
@@ -314,6 +314,13 @@ test("the language resolves to the full code, then the part before the dash, the
   // Brazilian Portuguese falls back to European Portuguese, on purpose.
   assert.equal(of("pt-BR"), "pt");
   assert.equal(of("pl-PL"), "pl");
+  assert.equal(of("ro-RO"), "ro");
+  assert.equal(of("da-DK"), "da");
+  assert.equal(of("sv-FI"), "sv");
+  assert.equal(of("uk-UA"), "uk");
+  assert.equal(of("cs-CZ"), "cs");
+  assert.equal(of("el-GR"), "el");
+  assert.equal(of("ga"), "ga");
   assert.equal(of("ja"), "en");
   // The card option comes first, then hass.locale, then hass.language.
   assert.equal(lang({ language: "fr", locale: { language: "sr-Latn" } }, {}), "sr-Latn");
@@ -367,6 +374,23 @@ test("the editor offers every language of the card, with its own name", () => {
   assert.equal(label("nl"), "Nederlands");
   assert.equal(label("pt"), "Português (Portugal)");
   assert.equal(label("pl"), "Polski");
+  const NAMES = {
+    ro: "Română",
+    da: "Dansk",
+    sv: "Svenska",
+    bg: "Български",
+    ru: "Русский",
+    uk: "Українська",
+    hu: "Magyar",
+    ga: "Gaeilge",
+    sk: "Slovenčina",
+    cs: "Čeština",
+    sl: "Slovenščina",
+    mt: "Malti",
+    lv: "Latviešu",
+    el: "Ελληνικά",
+  };
+  for (const [v, name] of Object.entries(NAMES)) assert.equal(label(v), name, v);
 });
 
 test("the confirmation popup OK button is not a filled button", () => {
@@ -564,7 +588,7 @@ test("with one sensor unavailable, the problems of the other are still counted",
   assert.match(html, /class="n">2</);
 });
 
-test("plural forms: 1 is singular in every language, Serbian and Polish use their 2-4 form", () => {
+test("plural forms: 1 is singular in every language, Slavic, Baltic and Maltese languages use their other forms", () => {
   const el = card(baseStates());
   const say = (language, key, n) => {
     el._config = { language };
@@ -581,10 +605,27 @@ test("plural forms: 1 is singular in every language, Serbian and Polish use thei
     pl: "1 automatyzacja",
     sr: "1 аутоматизација",
     "sr-Latn": "1 automatizacija",
+    ro: "1 automatizare",
+    da: "1 automatisering",
+    sv: "1 automatisering",
+    bg: "1 автоматизация",
+    ru: "1 автоматизация",
+    uk: "1 автоматизація",
+    hu: "1 automatizálás",
+    ga: "1 uathoibriú",
+    sk: "1 automatizácia",
+    cs: "1 automatizace",
+    sl: "1 avtomatizacija",
+    mt: "1 awtomazzjoni",
+    lv: "1 automatizācija",
+    el: "1 αυτοματισμός",
   };
   for (const [l, text] of Object.entries(ONE)) assert.equal(say(l, "automations", 1), text, l);
   // "1 problem": never the plural text with 1 in it.
-  for (const l of Object.keys(ONE)) assert.notEqual(say(l, "n_problems", 1), STRINGS[l].n_problems.replace("{n}", "1"), l);
+  // Swedish, Hungarian and Maltese use the same word: "1 problem" / "5 problem", "1 probléma", "20 problema".
+  const SAME = ["sv", "hu", "mt"];
+  for (const l of Object.keys(ONE).filter((l) => !SAME.includes(l))) assert.notEqual(say(l, "n_problems", 1), STRINGS[l].n_problems.replace("{n}", "1"), l);
+  for (const l of SAME) assert.equal(say(l, "n_problems", 1), STRINGS[l].n_problems_one.replace("{n}", "1"), l);
   const cases = {
     sr: { automations: ["1 аутоматизација", "2 аутоматизације", "5 аутоматизација", "21 аутоматизација", "22 аутоматизације"], n_problems: ["1 проблем", "2 проблема", "5 проблема", "21 проблем", "22 проблема"] },
     "sr-Latn": {
@@ -595,6 +636,14 @@ test("plural forms: 1 is singular in every language, Serbian and Polish use thei
       automations: ["1 automatyzacja", "2 automatyzacje", "5 automatyzacji", "21 automatyzacji", "22 automatyzacje"],
       n_problems: ["1 problem", "2 problemy", "5 problemów", "21 problemów", "22 problemy"],
     },
+    ro: { n_problems: ["1 problemă", "2 probleme", "5 probleme", "21 de probleme", "22 de probleme"] },
+    ru: { n_problems: ["1 проблема", "2 проблемы", "5 проблем", "21 проблема", "22 проблемы"] },
+    uk: { automations: ["1 автоматизація", "2 автоматизації", "5 автоматизацій", "21 автоматизація", "22 автоматизації"] },
+    cs: { n_problems: ["1 problém", "2 problémy", "5 problémů", "21 problémů", "22 problémů"] },
+    sk: { automations: ["1 automatizácia", "2 automatizácie", "5 automatizácií", "21 automatizácií", "22 automatizácií"] },
+    sl: { n_problems: ["1 težava", "2 težavi", "5 težav", "21 težav", "22 težav"], automations: ["1 avtomatizacija", "2 avtomatizaciji", "5 avtomatizacij", "21 avtomatizacij", "22 avtomatizacij"] },
+    lv: { n_problems: ["1 problēma", "2 problēmas", "5 problēmas", "21 problēma", "22 problēmas"] },
+    mt: { automations: ["1 awtomazzjoni", "2 awtomazzjonijiet", "5 awtomazzjonijiet", "21 awtomazzjoni", "22 awtomazzjoni"] },
     en: { automations: ["1 automation", "2 automations", "5 automations", "21 automations", "22 automations"], n_problems: ["1 problem", "2 problems", "5 problems", "21 problems", "22 problems"] },
   };
   for (const [l, keys] of Object.entries(cases))

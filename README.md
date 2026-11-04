@@ -34,7 +34,7 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Narrow cards (6 columns of the Sections view, the mini card's default size, down to ~156 px on a phone) stay readable: below ~384 px **Clear all** shows only its icon and the counters stack; the icon gets smaller below 320 px and is hidden below 280 px, so the status chip keeps its whole label; below 245 px the chip shrinks to its dot (its text stays in the tooltip)
-- Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish
+- Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Irish, Slovak, Czech, Slovenian, Maltese, Latvian and Greek
 - Single file, no external dependency
 
 ## Supported integrations
@@ -135,7 +135,7 @@ language: fr
 | `exclude_devices` | both | — | Devices to ignore: their unavailable linked entities (and failed automations attached to them) are left out of the lists, counters and status. Device ids (written by the visual editor) or device names |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |
-| `language` | both | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt` or `pl` (auto-detects from HA settings) |
+| `language` | both | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt`, `pl`, `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `ga`, `sk`, `cs`, `sl`, `mt`, `lv` or `el` (auto-detects from HA settings) |
 
 ## Screenshots
 
@@ -213,6 +213,20 @@ The cards auto-detect the language from your Home Assistant settings (Brazilian 
 | Nederlands | `nl` |
 | Português (Portugal) | `pt` |
 | Polski | `pl` |
+| Română | `ro` |
+| Dansk | `da` |
+| Svenska | `sv` |
+| Български | `bg` |
+| Русский | `ru` |
+| Українська | `uk` |
+| Magyar | `hu` |
+| Gaeilge | `ga` |
+| Slovenčina | `sk` |
+| Čeština | `cs` |
+| Slovenščina | `sl` |
+| Malti | `mt` |
+| Latviešu | `lv` |
+| Ελληνικά | `el` |
 
 Contributions for additional languages are welcome!
 
