@@ -84,6 +84,8 @@ const STRINGS = {
     show_details: "Show error details",
     max_items: "Items shown per list",
     exclude_devices: "Ignored devices",
+    hide_when_ok: "Hide when all is good",
+    hide_when_ok_helper: "The card only appears when an automation failed or a linked entity is unavailable (always shown while editing the dashboard)",
     zoom: "Detail button",
     zoom_helper: "Switches the mini card to the full card and back",
     language: "Language",
@@ -132,6 +134,8 @@ const STRINGS = {
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
     exclude_devices: "Appareils ignorés",
+    hide_when_ok: "Masquer quand tout va bien",
+    hide_when_ok_helper: "La carte n’apparaît que si une automatisation a échoué ou si une entité liée est indisponible (toujours visible en modifiant le tableau de bord)",
     zoom: "Bouton de détail",
     zoom_helper: "Bascule la mini-carte en carte complète, et inversement",
     language: "Langue",
@@ -180,6 +184,8 @@ const STRINGS = {
     show_details: "Fehlerdetails anzeigen",
     max_items: "Angezeigte Elemente pro Liste",
     exclude_devices: "Ignorierte Geräte",
+    hide_when_ok: "Ausblenden, wenn alles in Ordnung ist",
+    hide_when_ok_helper: "Die Karte erscheint nur, wenn eine Automatisierung fehlgeschlagen oder eine verknüpfte Entität nicht verfügbar ist (beim Bearbeiten des Dashboards immer sichtbar)",
     zoom: "Detail-Schaltfläche",
     zoom_helper: "Wechselt die Mini-Karte zur vollständigen Karte und zurück",
     language: "Sprache",
@@ -228,6 +234,8 @@ const STRINGS = {
     show_details: "Mostrar los detalles de los errores",
     max_items: "Elementos mostrados por lista",
     exclude_devices: "Dispositivos ignorados",
+    hide_when_ok: "Ocultar cuando todo está bien",
+    hide_when_ok_helper: "La tarjeta solo aparece cuando una automatización ha fallado o una entidad vinculada no está disponible (siempre visible al editar el panel)",
     zoom: "Botón de detalle",
     zoom_helper: "Cambia la minitarjeta a la tarjeta completa y viceversa",
     language: "Idioma",
@@ -278,6 +286,8 @@ const STRINGS = {
     show_details: "Прикажи детаље грешака",
     max_items: "Број ставки по листи",
     exclude_devices: "Занемарени уређаји",
+    hide_when_ok: "Сакриј када је све у реду",
+    hide_when_ok_helper: "Картица се појављује само када аутоматизација не успе или повезани ентитет није доступан (увек видљива током уређивања контролне табле)",
     zoom: "Дугме за детаље",
     zoom_helper: "Пребацује мини картицу на пун приказ и назад",
     language: "Језик",
@@ -328,6 +338,8 @@ const STRINGS = {
     show_details: "Prikaži detalje grešaka",
     max_items: "Broj stavki po listi",
     exclude_devices: "Zanemareni uređaji",
+    hide_when_ok: "Sakrij kada je sve u redu",
+    hide_when_ok_helper: "Kartica se pojavljuje samo kada automatizacija ne uspe ili povezani entitet nije dostupan (uvek vidljiva tokom uređivanja kontrolne table)",
     zoom: "Dugme za detalje",
     zoom_helper: "Prebacuje mini karticu na pun prikaz i nazad",
     language: "Jezik",
@@ -376,6 +388,8 @@ const STRINGS = {
     show_details: "Mostra i dettagli degli errori",
     max_items: "Elementi mostrati per elenco",
     exclude_devices: "Dispositivi ignorati",
+    hide_when_ok: "Nascondi quando è tutto a posto",
+    hide_when_ok_helper: "La scheda appare solo quando un’automazione non è riuscita o un’entità collegata non è disponibile (sempre visibile durante la modifica della plancia)",
     zoom: "Pulsante di dettaglio",
     zoom_helper: "Passa dalla mini scheda alla scheda completa e viceversa",
     language: "Lingua",
@@ -424,6 +438,8 @@ const STRINGS = {
     show_details: "Foutdetails tonen",
     max_items: "Getoonde items per lijst",
     exclude_devices: "Genegeerde apparaten",
+    hide_when_ok: "Verbergen als alles in orde is",
+    hide_when_ok_helper: "De kaart verschijnt alleen als een automatisering is mislukt of een gekoppelde entiteit niet beschikbaar is (altijd zichtbaar tijdens het bewerken van het dashboard)",
     zoom: "Detailknop",
     zoom_helper: "Schakelt de minikaart naar de volledige kaart en terug",
     language: "Taal",
@@ -472,6 +488,8 @@ const STRINGS = {
     show_details: "Mostrar os detalhes dos erros",
     max_items: "Elementos mostrados por lista",
     exclude_devices: "Dispositivos ignorados",
+    hide_when_ok: "Ocultar quando está tudo bem",
+    hide_when_ok_helper: "O cartão só aparece quando uma automação falhou ou uma entidade ligada está indisponível (sempre visível ao editar o painel)",
     zoom: "Botão de detalhe",
     zoom_helper: "Alterna o mini cartão para o cartão completo e vice-versa",
     language: "Idioma",
@@ -522,6 +540,8 @@ const STRINGS = {
     show_details: "Pokaż szczegóły błędów",
     max_items: "Liczba elementów na liście",
     exclude_devices: "Ignorowane urządzenia",
+    hide_when_ok: "Ukryj, gdy wszystko jest OK",
+    hide_when_ok_helper: "Karta pojawia się tylko wtedy, gdy automatyzacja się nie powiodła lub powiązana encja jest niedostępna (zawsze widoczna podczas edycji pulpitu)",
     zoom: "Przycisk szczegółów",
     zoom_helper: "Przełącza minikartę na pełną kartę i z powrotem",
     language: "Język",
@@ -790,6 +810,7 @@ const BASE_STYLE = `
      (one word), so a 1fr column, or a <div> wrapping the card in one, can make it as narrow as it needs.
      min-width: 0 lets a grid or flex layout shrink the host itself. */
   :host { display: block; min-width: 0; }
+  :host([hidden]) { display: none; }
   :host::before { content: "${"x ".repeat(35).trim()}"; display: block; height: 0; overflow: hidden; visibility: hidden;
                   font: 10px/0 monospace; }
   ha-card { contain: inline-size; }
@@ -1037,9 +1058,40 @@ class AutomationMonitorBase extends HTMLElement {
     return sig;
   }
 
+  // Set by Lovelace while the dashboard is edited (editMode) and in the card editor's preview (preview): a card
+  // hidden by hide_when_ok shows again there, so that it can still be edited.
+  set editMode(v) {
+    this._editMode = v;
+    this._update();
+  }
+
+  get editMode() {
+    return this._editMode;
+  }
+
+  set preview(v) {
+    this._preview = v;
+    this._update();
+  }
+
+  get preview() {
+    return this._preview;
+  }
+
+  // hide_when_ok: hidden while the status is "All good" (never while a sensor can't be read). The hidden
+  // property hides the host, and card-visibility-changed tells Lovelace to drop its grid slot too.
+  _applyVisibility() {
+    const data = this._data();
+    const hide = this._config.hide_when_ok === true && !this._editMode && !this._preview && !data.error && this._status(data).cls === "ok";
+    if (!!this.hidden === hide) return;
+    this.hidden = hide;
+    this.dispatchEvent(new CustomEvent("card-visibility-changed", { bubbles: true, composed: true }));
+  }
+
   _update(sig) {
     if (!this._hass || !this._config) return;
     this._sig = sig ?? this._signature();
+    this._applyVisibility();
     let html = this._render();
     if (this._confirm) {
       html = html.replace(/<ha-card>([\s\S]*)<\/ha-card>\s*$/, (_, inner) => `<ha-card class="dialog-open">${inner}${this._confirmHtml()}</ha-card>`);
@@ -1581,6 +1633,7 @@ class AutomationMonitorEditorBase extends HTMLElement {
     return [
       ["show_failed", true],
       ["show_linked", true],
+      ["hide_when_ok", false],
     ];
   }
 

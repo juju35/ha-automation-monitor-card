@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0 - 2026-11-04
+
+### What's new
+- Cards: **Hide when all is good** (`hide_when_ok: true`), in the visual editor of both cards: the card only appears when an automation failed or a linked entity is unavailable (among the lists it shows). It stays visible while a sensor can't be read, and while the dashboard is edited or in the card editor's preview; in a Sections view its slot goes away with it.
+
 ## 1.14.9 - 2026-11-02
 
 ### Fixes
