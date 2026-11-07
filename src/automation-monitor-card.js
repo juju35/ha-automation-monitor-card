@@ -84,6 +84,8 @@ const STRINGS = {
     show_details: "Show error details",
     max_items: "Items shown per list",
     exclude_devices: "Ignored devices",
+    exclude_entities: "Ignored entities",
+    exclude_entities_helper: "Entity ids, or patterns with * and ?: matching automations and entities are left out of the lists, counters and status",
     hide_when_ok: "Hide when all is good",
     hide_when_ok_helper: "The card only appears when an automation failed or a linked entity is unavailable (always shown while editing the dashboard)",
     zoom: "Detail button",
@@ -134,6 +136,8 @@ const STRINGS = {
     show_details: "Afficher le détail des erreurs",
     max_items: "Éléments affichés par liste",
     exclude_devices: "Appareils ignorés",
+    exclude_entities: "Entités ignorées",
+    exclude_entities_helper: "Identifiants d’entité, ou motifs avec * et ? : les automatisations et entités correspondantes sont exclues des listes, des compteurs et du statut",
     hide_when_ok: "Masquer quand tout va bien",
     hide_when_ok_helper: "La carte n’apparaît que si une automatisation a échoué ou si une entité liée est indisponible (toujours visible en modifiant le tableau de bord)",
     zoom: "Bouton de détail",
@@ -184,6 +188,8 @@ const STRINGS = {
     show_details: "Fehlerdetails anzeigen",
     max_items: "Angezeigte Elemente pro Liste",
     exclude_devices: "Ignorierte Geräte",
+    exclude_entities: "Ignorierte Entitäten",
+    exclude_entities_helper: "Entitäts-IDs oder Muster mit * und ?: passende Automatisierungen und Entitäten werden aus Listen, Zählern und Status ausgelassen",
     hide_when_ok: "Ausblenden, wenn alles in Ordnung ist",
     hide_when_ok_helper: "Die Karte erscheint nur, wenn eine Automatisierung fehlgeschlagen oder eine verknüpfte Entität nicht verfügbar ist (beim Bearbeiten des Dashboards immer sichtbar)",
     zoom: "Detail-Schaltfläche",
@@ -234,6 +240,8 @@ const STRINGS = {
     show_details: "Mostrar los detalles de los errores",
     max_items: "Elementos mostrados por lista",
     exclude_devices: "Dispositivos ignorados",
+    exclude_entities: "Entidades ignoradas",
+    exclude_entities_helper: "IDs de entidad, o patrones con * y ?: las automatizaciones y entidades que coinciden se excluyen de las listas, los contadores y el estado",
     hide_when_ok: "Ocultar cuando todo está bien",
     hide_when_ok_helper: "La tarjeta solo aparece cuando una automatización ha fallado o una entidad vinculada no está disponible (siempre visible al editar el panel)",
     zoom: "Botón de detalle",
@@ -286,6 +294,8 @@ const STRINGS = {
     show_details: "Прикажи детаље грешака",
     max_items: "Број ставки по листи",
     exclude_devices: "Занемарени уређаји",
+    exclude_entities: "Занемарени ентитети",
+    exclude_entities_helper: "ИД-ови ентитета или обрасци са * и ?: одговарајуће аутоматизације и ентитети се изостављају из листа, бројача и статуса",
     hide_when_ok: "Сакриј када је све у реду",
     hide_when_ok_helper: "Картица се појављује само када аутоматизација не успе или повезани ентитет није доступан (увек видљива током уређивања контролне табле)",
     zoom: "Дугме за детаље",
@@ -338,6 +348,8 @@ const STRINGS = {
     show_details: "Prikaži detalje grešaka",
     max_items: "Broj stavki po listi",
     exclude_devices: "Zanemareni uređaji",
+    exclude_entities: "Zanemareni entiteti",
+    exclude_entities_helper: "ID-ovi entiteta ili obrasci sa * i ?: odgovarajuće automatizacije i entiteti se izostavljaju iz lista, brojača i statusa",
     hide_when_ok: "Sakrij kada je sve u redu",
     hide_when_ok_helper: "Kartica se pojavljuje samo kada automatizacija ne uspe ili povezani entitet nije dostupan (uvek vidljiva tokom uređivanja kontrolne table)",
     zoom: "Dugme za detalje",
@@ -388,6 +400,8 @@ const STRINGS = {
     show_details: "Mostra i dettagli degli errori",
     max_items: "Elementi mostrati per elenco",
     exclude_devices: "Dispositivi ignorati",
+    exclude_entities: "Entità ignorate",
+    exclude_entities_helper: "ID di entità, o modelli con * e ?: le automazioni e le entità corrispondenti sono escluse da elenchi, contatori e stato",
     hide_when_ok: "Nascondi quando è tutto a posto",
     hide_when_ok_helper: "La scheda appare solo quando un’automazione non è riuscita o un’entità collegata non è disponibile (sempre visibile durante la modifica della plancia)",
     zoom: "Pulsante di dettaglio",
@@ -438,6 +452,8 @@ const STRINGS = {
     show_details: "Foutdetails tonen",
     max_items: "Getoonde items per lijst",
     exclude_devices: "Genegeerde apparaten",
+    exclude_entities: "Genegeerde entiteiten",
+    exclude_entities_helper: "Entiteit-ID’s, of patronen met * en ?: overeenkomende automatiseringen en entiteiten worden weggelaten uit de lijsten, tellers en status",
     hide_when_ok: "Verbergen als alles in orde is",
     hide_when_ok_helper: "De kaart verschijnt alleen als een automatisering is mislukt of een gekoppelde entiteit niet beschikbaar is (altijd zichtbaar tijdens het bewerken van het dashboard)",
     zoom: "Detailknop",
@@ -488,6 +504,8 @@ const STRINGS = {
     show_details: "Mostrar os detalhes dos erros",
     max_items: "Elementos mostrados por lista",
     exclude_devices: "Dispositivos ignorados",
+    exclude_entities: "Entidades ignoradas",
+    exclude_entities_helper: "IDs de entidade, ou padrões com * e ?: as automações e entidades correspondentes são excluídas das listas, contadores e estado",
     hide_when_ok: "Ocultar quando está tudo bem",
     hide_when_ok_helper: "O cartão só aparece quando uma automação falhou ou uma entidade ligada está indisponível (sempre visível ao editar o painel)",
     zoom: "Botão de detalhe",
@@ -540,6 +558,8 @@ const STRINGS = {
     show_details: "Pokaż szczegóły błędów",
     max_items: "Liczba elementów na liście",
     exclude_devices: "Ignorowane urządzenia",
+    exclude_entities: "Ignorowane encje",
+    exclude_entities_helper: "Identyfikatory encji lub wzorce z * i ?: pasujące automatyzacje i encje są pomijane na listach, w licznikach i statusie",
     hide_when_ok: "Ukryj, gdy wszystko jest OK",
     hide_when_ok_helper: "Karta pojawia się tylko wtedy, gdy automatyzacja się nie powiodła lub powiązana encja jest niedostępna (zawsze widoczna podczas edycji pulpitu)",
     zoom: "Przycisk szczegółów",
@@ -593,6 +613,8 @@ const STRINGS = {
     show_details: "Afișează detaliile erorilor",
     max_items: "Elemente afișate pe listă",
     exclude_devices: "Dispozitive ignorate",
+    exclude_entities: "Entități ignorate",
+    exclude_entities_helper: "ID-uri de entitate sau modele cu * și ?: automatizările și entitățile potrivite sunt excluse din liste, contoare și stare",
     hide_when_ok: "Ascunde când totul este în regulă",
     hide_when_ok_helper: "Cardul apare doar când o automatizare a eșuat sau o entitate legată este indisponibilă (mereu vizibil în timpul editării tabloului de bord)",
     zoom: "Buton de detalii",
@@ -643,6 +665,8 @@ const STRINGS = {
     show_details: "Vis fejldetaljer",
     max_items: "Elementer vist pr. liste",
     exclude_devices: "Ignorerede enheder",
+    exclude_entities: "Ignorerede entiteter",
+    exclude_entities_helper: "Entitets-id’er eller mønstre med * og ?: matchende automatiseringer og entiteter udelades af lister, tællere og status",
     hide_when_ok: "Skjul, når alt er i orden",
     hide_when_ok_helper: "Kortet vises kun, når en automatisering er mislykkedes, eller en tilknyttet entitet er utilgængelig (altid synligt under redigering af dashboardet)",
     zoom: "Detaljeknap",
@@ -693,6 +717,8 @@ const STRINGS = {
     show_details: "Visa felinformation",
     max_items: "Objekt som visas per lista",
     exclude_devices: "Ignorerade enheter",
+    exclude_entities: "Ignorerade entiteter",
+    exclude_entities_helper: "Entitets-id:n eller mönster med * och ?: matchande automatiseringar och entiteter utelämnas från listor, räknare och status",
     hide_when_ok: "Dölj när allt är i ordning",
     hide_when_ok_helper: "Kortet visas bara när en automatisering har misslyckats eller en länkad entitet är otillgänglig (visas alltid när instrumentpanelen redigeras)",
     zoom: "Detaljknapp",
@@ -743,6 +769,8 @@ const STRINGS = {
     show_details: "Показване на подробности за грешките",
     max_items: "Брой елементи в списък",
     exclude_devices: "Игнорирани устройства",
+    exclude_entities: "Игнорирани обекти",
+    exclude_entities_helper: "ID на обекти или шаблони с * и ?: съответстващите автоматизации и обекти се изключват от списъците, броячите и състоянието",
     hide_when_ok: "Скриване, когато всичко е наред",
     hide_when_ok_helper: "Картата се показва само когато автоматизация е неуспешна или свързан обект е недостъпен (винаги видима при редактиране на таблото)",
     zoom: "Бутон за подробности",
@@ -795,6 +823,8 @@ const STRINGS = {
     show_details: "Показывать подробности ошибок",
     max_items: "Элементов в списке",
     exclude_devices: "Игнорируемые устройства",
+    exclude_entities: "Игнорируемые объекты",
+    exclude_entities_helper: "ID объектов или шаблоны с * и ?: подходящие автоматизации и объекты исключаются из списков, счётчиков и статуса",
     hide_when_ok: "Скрывать, когда всё в порядке",
     hide_when_ok_helper: "Карточка появляется, только если автоматизация завершилась ошибкой или связанный объект недоступен (всегда видна при редактировании панели)",
     zoom: "Кнопка подробностей",
@@ -847,6 +877,8 @@ const STRINGS = {
     show_details: "Показувати деталі помилок",
     max_items: "Елементів у списку",
     exclude_devices: "Ігноровані пристрої",
+    exclude_entities: "Ігноровані сутності",
+    exclude_entities_helper: "ID сутностей або шаблони з * і ?: відповідні автоматизації та сутності виключаються зі списків, лічильників і статусу",
     hide_when_ok: "Приховувати, коли все гаразд",
     hide_when_ok_helper: "Картка з’являється, лише коли автоматизація завершилася помилкою або пов’язана сутність недоступна (завжди видима під час редагування панелі)",
     zoom: "Кнопка деталей",
@@ -897,6 +929,8 @@ const STRINGS = {
     show_details: "Hibarészletek megjelenítése",
     max_items: "Listánként megjelenített elemek",
     exclude_devices: "Figyelmen kívül hagyott eszközök",
+    exclude_entities: "Figyelmen kívül hagyott entitások",
+    exclude_entities_helper: "Entitásazonosítók vagy * és ? karaktert tartalmazó minták: az egyező automatizálások és entitások kimaradnak a listákból, számlálókból és az állapotból",
     hide_when_ok: "Elrejtés, ha minden rendben",
     hide_when_ok_helper: "A kártya csak akkor jelenik meg, ha egy automatizálás sikertelen volt vagy egy kapcsolt entitás nem elérhető (az irányítópult szerkesztése közben mindig látható)",
     zoom: "Részletek gomb",
@@ -949,6 +983,8 @@ const STRINGS = {
     show_details: "Zobraziť podrobnosti chýb",
     max_items: "Počet položiek v zozname",
     exclude_devices: "Ignorované zariadenia",
+    exclude_entities: "Ignorované entity",
+    exclude_entities_helper: "ID entít alebo vzory s * a ?: zodpovedajúce automatizácie a entity sa vynechajú zo zoznamov, počítadiel a stavu",
     hide_when_ok: "Skryť, keď je všetko v poriadku",
     hide_when_ok_helper: "Karta sa zobrazí, len keď automatizácia zlyhala alebo je prepojená entita nedostupná (pri úprave ovládacieho panela je vždy viditeľná)",
     zoom: "Tlačidlo podrobností",
@@ -1001,6 +1037,8 @@ const STRINGS = {
     show_details: "Zobrazit podrobnosti chyb",
     max_items: "Počet položek v seznamu",
     exclude_devices: "Ignorovaná zařízení",
+    exclude_entities: "Ignorované entity",
+    exclude_entities_helper: "ID entit nebo vzory s * a ?: odpovídající automatizace a entity jsou vynechány ze seznamů, počítadel a stavu",
     hide_when_ok: "Skrýt, když je vše v pořádku",
     hide_when_ok_helper: "Karta se zobrazí, jen když automatizace selhala nebo je propojená entita nedostupná (při úpravách ovládacího panelu je vždy viditelná)",
     zoom: "Tlačítko podrobností",
@@ -1055,6 +1093,8 @@ const STRINGS = {
     show_details: "Pokaži podrobnosti napak",
     max_items: "Število elementov na seznamu",
     exclude_devices: "Prezrte naprave",
+    exclude_entities: "Prezrte entitete",
+    exclude_entities_helper: "ID-ji entitet ali vzorci z * in ?: ustrezne avtomatizacije in entitete so izpuščene iz seznamov, števcev in stanja",
     hide_when_ok: "Skrij, ko je vse v redu",
     hide_when_ok_helper: "Kartica se prikaže le, ko avtomatizacija ne uspe ali povezana entiteta ni na voljo (med urejanjem nadzorne plošče je vedno vidna)",
     zoom: "Gumb za podrobnosti",
@@ -1109,6 +1149,8 @@ const STRINGS = {
     show_details: "Rādīt kļūdu informāciju",
     max_items: "Vienumu skaits sarakstā",
     exclude_devices: "Ignorētās ierīces",
+    exclude_entities: "Ignorētās vienības",
+    exclude_entities_helper: "Vienību ID vai šabloni ar * un ?: atbilstošās automatizācijas un vienības netiek iekļautas sarakstos, skaitītājos un statusā",
     hide_when_ok: "Paslēpt, kad viss kārtībā",
     hide_when_ok_helper: "Kartīte parādās tikai tad, ja automatizācija neizdevās vai saistītā vienība nav pieejama (informācijas paneļa rediģēšanas laikā vienmēr redzama)",
     zoom: "Detalizācijas poga",
@@ -1159,6 +1201,8 @@ const STRINGS = {
     show_details: "Εμφάνιση λεπτομερειών σφαλμάτων",
     max_items: "Στοιχεία ανά λίστα",
     exclude_devices: "Συσκευές που αγνοούνται",
+    exclude_entities: "Οντότητες που αγνοούνται",
+    exclude_entities_helper: "Αναγνωριστικά οντοτήτων ή μοτίβα με * και ?: οι αντίστοιχοι αυτοματισμοί και οντότητες παραλείπονται από τις λίστες, τους μετρητές και την κατάσταση",
     hide_when_ok: "Απόκρυψη όταν όλα είναι εντάξει",
     hide_when_ok_helper: "Η κάρτα εμφανίζεται μόνο όταν ένας αυτοματισμός αποτύχει ή μια συνδεδεμένη οντότητα δεν είναι διαθέσιμη (πάντα ορατή κατά την επεξεργασία του πίνακα ελέγχου)",
     zoom: "Κουμπί λεπτομερειών",
@@ -1227,9 +1271,21 @@ const ago = (hass, config, iso) => {
   return rtf.format(Math.round(diff / 86400), "day");
 };
 
+// 12 / 24 h clock from the Home Assistant profile (time_format): "12", "24", "system" (the browser's own
+// locale) or "language" (the card's language, the Intl default: undefined).
+const hour12Of = (hass) => {
+  const tf = hass?.locale?.time_format;
+  if (tf === "12") return true;
+  if (tf === "24") return false;
+  if (tf === "system") return new Intl.DateTimeFormat(undefined, { hour: "numeric" }).resolvedOptions().hour12;
+  return undefined;
+};
+
 const fullDate = (hass, config, iso) => {
   const d = new Date(iso);
-  return Number.isFinite(d.getTime()) ? d.toLocaleString(intlLang(hass, config), { dateStyle: "medium", timeStyle: "short" }) : "";
+  if (!Number.isFinite(d.getTime())) return "";
+  const hour12 = hour12Of(hass);
+  return d.toLocaleString(intlLang(hass, config), { dateStyle: "medium", timeStyle: "short", ...(hour12 === undefined ? {} : { hour12 }) });
 };
 
 const byDateDesc = (key) => (a, b) => (Date.parse(b[key]) || 0) - (Date.parse(a[key]) || 0);
@@ -1371,6 +1427,29 @@ const computeExcluded = (hass, config) => {
     if (name && names.has(name)) ids.add(d.id);
   }
   return ids;
+};
+
+// Entities to ignore, from exclude_entities: entity ids or patterns with * (any characters) and ? (one
+// character), case-insensitive. Returns a predicate on an entity id, or null when nothing is excluded; one
+// per exclude_entities value, cached.
+const _entityMatchers = new Map();
+const excludedEntities = (config) => {
+  const key = JSON.stringify(config.exclude_entities ?? null);
+  if (!_entityMatchers.has(key)) _entityMatchers.set(key, entityMatcher(config.exclude_entities));
+  return _entityMatchers.get(key);
+};
+
+const entityMatcher = (value) => {
+  const wanted = [].concat(value ?? []).map((v) => String(v).trim().toLowerCase()).filter(Boolean);
+  if (!wanted.length) return null;
+  const ids = new Set(wanted.filter((v) => !/[*?]/.test(v)));
+  const globs = wanted
+    .filter((v) => /[*?]/.test(v))
+    .map((v) => new RegExp(`^${v.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`));
+  return (id) => {
+    const s = String(id ?? "").toLowerCase();
+    return ids.has(s) || globs.some((re) => re.test(s));
+  };
 };
 
 // Editor page of an automation, script or scene, when it was created in the UI.
@@ -1653,12 +1732,18 @@ class AutomationMonitorBase extends HTMLElement {
     return id ? this._hass.states[id] : undefined;
   }
 
+  // Trace, editor links and the Clear / Refresh buttons open admin pages or call admin actions: only
+  // administrators get them.
+  get _admin() {
+    return !!this._hass?.user?.is_admin;
+  }
+
   // What the render depends on: registries, language, the two sensors, the automations, scripts and
   // scenes they list (names, editor ids) and, only while the subtitle shows it, the number of automations
   // (counting them walks every state, and hass.states is replaced on each state change).
   _signature() {
     const h = this._hass;
-    const sig = [h.entities, h.devices, h.language, h.locale?.language];
+    const sig = [h.entities, h.devices, h.language, h.locale?.language, h.locale?.time_format, this._admin];
     const found = findSensors(h, this._config);
     if (found.error) return sig;
     const list = (v) => (Array.isArray(v) ? v : []);
@@ -1757,7 +1842,7 @@ class AutomationMonitorBase extends HTMLElement {
       if (action === "confirm_ok") {
         const { data } = this._confirm;
         this._closeConfirm();
-        this._call(PLATFORM, "reset", data);
+        for (const d of [].concat(data)) this._call(PLATFORM, "reset", d);
       } else if (action === "confirm_cancel" || (action === "confirm_backdrop" && ev.composedPath()[0] === el)) {
         this._closeConfirm();
       }
@@ -1778,7 +1863,11 @@ class AutomationMonitorBase extends HTMLElement {
     if (action === "reset") {
       this._openConfirm({ data: { entity_id: entity }, text: this._t("confirm_reset", { name: label }), ok: this._t("reset"), opener: el });
     } else if (action === "reset_all") {
-      this._openConfirm({ data: {}, text: this._t("confirm_reset_all"), ok: this._t("reset_all"), opener: el });
+      // Failures left out by exclude_devices / exclude_entities stay: then only the listed automations are
+      // cleared, one call each (the action takes a single entity_id); otherwise one call clears them all.
+      const data = this._data();
+      const ids = data.failuresHidden ? [...new Set(data.failures.map((a) => a.entity_id))].map((entity_id) => ({ entity_id })) : {};
+      this._openConfirm({ data: ids, text: this._t("confirm_reset_all"), ok: this._t("reset_all"), opener: el });
     } else if (action === "rebuild") {
       // Short spin of the button: the sensors update on their own once the rebuild is done.
       this._refreshing = true;
@@ -1842,14 +1931,17 @@ class AutomationMonitorBase extends HTMLElement {
     const f = this._s(found.failed);
     const l = this._s(found.linked);
     if (!valid(f) && !valid(l)) return { error: "unavailable" };
-    // Items of an ignored device are left out everywhere: lists, counters and status.
+    // Items of an ignored device or entity are left out everywhere: lists, counters and status.
     const ignored = excludedDevices(this._hass, this._config);
-    const keep = (item) => !ignored?.has(deviceOf(this._hass, item));
-    const failures = (valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : []).filter(keep).sort(byDateDesc("last_error_time"));
+    const ignoredIds = excludedEntities(this._config);
+    const keep = (item) => !ignored?.has(deviceOf(this._hass, item)) && !ignoredIds?.(item.entity_id);
+    const allFailures = valid(f) && Array.isArray(f.attributes.automations) ? f.attributes.automations : [];
+    const failures = allFailures.filter(keep).sort(byDateDesc("last_error_time"));
     const linked = (valid(l) && Array.isArray(l.attributes.entities) ? l.attributes.entities : []).filter(keep).sort(byDateDesc("unavailable_since"));
     // A sensor that is unavailable, unknown or missing (disabled) says nothing: its counter and the status chip
     // must not read it as 0 problems.
-    return { failedId: found.failed, linkedId: found.linked, failures, linked, failedNA: !valid(f), linkedNA: !valid(l) };
+    const failuresHidden = failures.length < allFailures.length;
+    return { failedId: found.failed, linkedId: found.linked, failures, failuresHidden, linked, failedNA: !valid(f), linkedNA: !valid(l) };
   }
 
   _status(data) {
@@ -1897,7 +1989,11 @@ class AutomationMonitorBase extends HTMLElement {
         <span class="chip clickable ${status.cls}" role="button" tabindex="0" data-entity="${esc(status.entity || "")}" title="${esc(status.text)}" aria-label="${esc(
           status.text
         )}"><span class="dot"></span><span class="txt">${esc(status.text)}</span></span>
-        <button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>
+        ${
+          this._admin
+            ? `<button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>`
+            : ""
+        }
         ${this._zoomButton()}
       </div>`;
   }
@@ -2056,7 +2152,7 @@ class AutomationMonitorCard extends AutomationMonitorBase {
   }
 
   _failedSection(data) {
-    const controls = this._config.show_controls !== false;
+    const controls = this._config.show_controls !== false && this._admin;
     const button =
       controls && data.failures.length
         ? `<button class="btn" data-action="reset_all" title="${esc(this._t("reset_all"))}" aria-label="${esc(this._t("reset_all"))}">${svgIcon(ICONS.clear)}<span>${esc(
@@ -2076,8 +2172,8 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     if (a.error_step && a.error_step !== "unknown") tags.push(`<span class="tag" title="${esc(this._t("step"))}">${svgIcon(ICONS.step)}${esc(a.error_step)}</span>`);
     if (a.consecutive_failures > 1) tags.push(`<span class="tag streak">${svgIcon(ICONS.repeat)}${esc(this._t("streak", { n: a.consecutive_failures }))}</span>`);
     const actions = [];
-    const trace = tracePath(h, a.entity_id, a.unique_id);
-    const edit = editorPath(h, a.entity_id, a.unique_id);
+    const trace = this._admin && tracePath(h, a.entity_id, a.unique_id);
+    const edit = this._admin && editorPath(h, a.entity_id, a.unique_id);
     if (trace) actions.push(`<button class="btn" data-key="trace" data-path="${esc(trace)}">${svgIcon(ICONS.trace)}<span>${esc(this._t("trace"))}</span></button>`);
     if (edit) actions.push(`<button class="btn" data-key="edit" data-path="${esc(edit)}">${svgIcon(ICONS.edit)}<span>${esc(this._t("edit"))}</span></button>`);
     if (controls)
@@ -2111,7 +2207,8 @@ class AutomationMonitorCard extends AutomationMonitorBase {
     const sources = details.map((src) => {
       const domain = String(src.entity_id).split(".")[0];
       const name = src.name || h.states[src.entity_id]?.attributes?.friendly_name || src.entity_id;
-      const path = editorPath(h, src.entity_id, src.unique_id);
+      // Non-admins get the more-info dialog instead of the editor.
+      const path = this._admin && editorPath(h, src.entity_id, src.unique_id);
       const icon = ICONS[domain] || ICONS.automation;
       return `<span class="tag link" role="button" tabindex="0" data-key="${esc(src.entity_id)}" ${path ? `data-path="${esc(path)}"` : `data-entity="${esc(src.entity_id)}"`} title="${esc(src.entity_id)}">${svgIcon(icon)}${esc(name)}</span>`;
     });
@@ -2287,6 +2384,8 @@ class AutomationMonitorEditorBase extends HTMLElement {
       { name: "title", selector: { text: {} } },
       ...this.constructor.extraFields(tr),
       { name: "exclude_devices", selector: { device: { multiple: true } } },
+      // Text, not an entity picker: patterns with * and ? are allowed.
+      { name: "exclude_entities", selector: { text: { multiple: true } } },
       { type: "grid", name: "", schema: this.constructor.toggles.map(([name]) => ({ name, selector: { boolean: {} } })) },
       {
         name: "language",

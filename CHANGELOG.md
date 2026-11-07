@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.16.0 - 2026-11-07
+
+### What's new
+- Cards: **Ignored entities** (`exclude_entities`), in the visual editor of both cards: entity ids or patterns with `*` and `?` (e.g. `automation.test_*`) whose failed automations and unavailable linked entities are left out of the lists, counters and status.
+
+### Security
+- Cards: the Trace, Edit, Clear, Clear all and Refresh buttons and the editor links under "Used by" are only shown to administrators; other users open the more-info dialog from "Used by" instead.
+
+### Fixes
+- Full card: **Clear all** no longer clears failed automations hidden by `exclude_devices` or `exclude_entities`; it then clears only the listed ones.
+- Cards: the date and time shown when hovering a failure time follow the 12 / 24 h setting of the Home Assistant profile.
+
 ## 1.15.2 - 2026-11-04
 
 ### Documentation

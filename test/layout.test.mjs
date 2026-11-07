@@ -82,7 +82,7 @@ const measure = async (type, config, { langs = LANGS, widths = WIDTHS, variants 
           slot.style.width = `${width}px`;
           const el = document.createElement(tag);
           el.setConfig({ type: `custom:${tag}`, language, ...config });
-          el.hass = { states, entities, language: "en", locale: { language: "en" }, callService: () => {} };
+          el.hass = { states, entities, language: "en", locale: { language: "en" }, user: { is_admin: true }, callService: () => {} };
           slot.append(el);
           root.append(slot);
           if (type === "zoomed") el._setZoom(true);
@@ -227,7 +227,7 @@ test("intrinsic-width containers: the cards keep a usable width and still fit a 
           for (const type of ["automation-monitor-card", "automation-monitor-mini-card"]) {
             const el = document.createElement(type);
             el.setConfig({ type: `custom:${type}` });
-            el.hass = { states, entities, language: "en", callService: () => {} };
+            el.hass = { states, entities, language: "en", user: { is_admin: true }, callService: () => {} };
             const box = wrapped ? document.createElement("div") : el;
             if (wrapped) box.append(el);
             document.getElementById(wrapped ? `${id}-div` : id).append(box);
@@ -276,7 +276,7 @@ test("width thresholds: the attributes follow the width without any ResizeObserv
         slot.style.width = "150px";
         const el = document.createElement(type);
         el.setConfig({ type: `custom:${type}`, expand_failed: true, expand_linked: true });
-        el.hass = { states, entities, language: "en", callService: () => {} };
+        el.hass = { states, entities, language: "en", user: { is_admin: true }, callService: () => {} };
         slot.append(el);
         document.body.append(slot);
         cards.push([type, slot, el]);

@@ -11,6 +11,8 @@ const {
   esc,
   editorPath,
   excludedDevices,
+  excludedEntities,
+  fullDate,
   rtfFor,
   DIALOG_STYLE,
   STRINGS,
@@ -30,6 +32,8 @@ const {
   "esc",
   "editorPath",
   "excludedDevices",
+  "excludedEntities",
+  "fullDate",
   "STRINGS",
   "lang",
 ]);
@@ -47,10 +51,11 @@ const baseStates = () => ({
 });
 
 const devices = {};
+const admin = { is_admin: true };
 const card = (states) => {
   const el = new AutomationMonitorCard();
   el._config = {};
-  el._hass = { states, entities, devices, language: "en" };
+  el._hass = { states, entities, devices, language: "en", user: admin };
   return el;
 };
 
@@ -152,7 +157,7 @@ test("the automations are only counted while the subtitle shows their number", (
 const zoomCard = (config = {}) => {
   const el = new AutomationMonitorMiniCard();
   el._config = config;
-  el._hass = { states: baseStates(), entities, devices, language: config.language || "en" };
+  el._hass = { states: baseStates(), entities, devices, language: config.language || "en", user: admin };
   el._update = () => {
     el.html = el._render();
   };
@@ -667,7 +672,7 @@ test("an unavailable sensor whose list is hidden (show_failed: false) leaves the
   // The mini card shares the counters: a dash there too.
   const mini = new AutomationMonitorMiniCard();
   mini._config = {};
-  mini._hass = { states: naStates("unknown"), entities, devices, language: "en" };
+  mini._hass = { states: naStates("unknown"), entities, devices, language: "en", user: admin };
   assert.match(mini._render(), /<div class="n">—<\/div>/);
 });
 
@@ -688,7 +693,7 @@ test("hide_when_ok hides the cards while all is good, and tells Lovelace; never 
     el.events = [];
     el.dispatchEvent = (ev) => el.events.push(ev.type);
     el._config = config;
-    el._hass = { states, entities, devices, language: "en" };
+    el._hass = { states, entities, devices, language: "en", user: admin };
     el._applyVisibility();
     return el;
   };
@@ -697,12 +702,12 @@ test("hide_when_ok hides the cards while all is good, and tells Lovelace; never 
     assert.equal(el.hidden, true, Card.name);
     assert.deepEqual(el.events, ["card-visibility-changed"], Card.name);
     // A failure: shown again, Lovelace told once more.
-    el._hass = { states: baseStates(), entities, devices, language: "en" };
+    el._hass = { states: baseStates(), entities, devices, language: "en", user: admin };
     el._applyVisibility();
     assert.equal(el.hidden, false, Card.name);
     assert.equal(el.events.length, 2, Card.name);
     // Edited dashboard or card editor preview: always shown.
-    el._hass = { states: ok, entities, devices, language: "en" };
+    el._hass = { states: ok, entities, devices, language: "en", user: admin };
     el._applyVisibility();
     assert.equal(el.hidden, true, Card.name);
     el._editMode = true;
@@ -726,4 +731,95 @@ test("hide_when_ok is offered in both editors, off by default", () => {
   for (const Editor of [AutomationMonitorCardEditor, AutomationMonitorMiniCardEditor]) {
     assert.ok(Editor.toggles.some(([n, d]) => n === "hide_when_ok" && d === false), Editor.name);
   }
+});
+
+// Two failures and a linked entity used by a UI script: the admin-only controls are all present for an admin.
+const richStates = () => {
+  const states = baseStates();
+  states["sensor.failed"].attributes.automations = [failure, { entity_id: "automation.b", name: "B", last_error_time: "2026-10-24T09:00:00Z" }];
+  states["automation.b"] = { entity_id: "automation.b", state: "on", attributes: { id: "2" } };
+  states["sensor.linked"] = {
+    entity_id: "sensor.linked",
+    state: "1",
+    attributes: { entities: [{ entity_id: "light.kitchen", name: "Kitchen", referenced_by_details: [{ entity_id: "script.night", unique_id: "night" }] }] },
+  };
+  return states;
+};
+
+test("non-admins get no Trace, Edit, Clear, Clear all or Refresh, and the used-by tags open more-info", () => {
+  const el = card(richStates());
+  el._config = { expand_failed: true, expand_linked: true };
+  const adminHtml = el._render();
+  for (const re of [/data-key="trace"/, /data-key="edit"/, /data-action="reset"/, /data-action="reset_all"/, /data-action="rebuild"/, /data-path="\/config\/script\/edit\/night"/])
+    assert.match(adminHtml, re);
+  for (const user of [{ is_admin: false }, undefined]) {
+    el._hass = { ...el._hass, user };
+    const html = el._render();
+    for (const re of [/data-key="trace"/, /data-key="edit"/, /data-action="reset"/, /data-action="reset_all"/, /data-action="rebuild"/, /data-path=/])
+      assert.doesNotMatch(html, re);
+    assert.match(html, /class="tag link"[^>]*data-entity="script.night"/);
+  }
+  // The admin flag is part of the render signature.
+  el._hass = { ...el._hass, user: { is_admin: true } };
+  const sig = el._signature();
+  el._hass = { ...el._hass, user: { is_admin: false } };
+  assert.ok(!sameSig(sig, el._signature()));
+});
+
+test("exclude_entities leaves out matching ids and globs from lists, counters and status", () => {
+  const match = excludedEntities({ exclude_entities: ["automation.b", "light.*", " Sensor.?ump "] });
+  assert.ok(match("automation.b") && match("light.kitchen") && match("sensor.pump") && match("LIGHT.x"));
+  assert.ok(!match("automation.a") && !match("sensor.sump_2") && !match("automation.bb"));
+  assert.equal(excludedEntities({ exclude_entities: ["automation.b", "light.*", " Sensor.?ump "] }), match);
+  assert.equal(excludedEntities({}), null);
+  assert.equal(excludedEntities({ exclude_entities: "automation.a" })("automation.a"), true);
+  const el = card(richStates());
+  el._config = { exclude_entities: ["automation.b", "light.*"] };
+  const data = el._data();
+  assert.deepEqual(
+    data.failures.map((a) => a.entity_id),
+    ["automation.a"]
+  );
+  assert.equal(data.linked.length, 0);
+  assert.equal(data.failuresHidden, true);
+  assert.match(el._render(), /1 problem/);
+});
+
+test("Clear all with exclusions only clears the listed automations, without them it clears everything", async () => {
+  const run = async (config) => {
+    const el = card(richStates());
+    el._config = config;
+    el._update = () => {};
+    el.connectedCallback();
+    const calls = [];
+    el._hass.callService = (domain, service, data) => calls.push(`${domain}.${service} ${JSON.stringify(data)}`);
+    el._confirmClosedAt = 0;
+    el._onClick(click([{ dataset: { action: "reset_all" } }]));
+    el._onClick(click([{ dataset: { action: "confirm_ok" } }]));
+    await new Promise((r) => setTimeout(r, 0));
+    el.disconnectedCallback();
+    return calls;
+  };
+  assert.deepEqual(await run({}), ["automation_monitor.reset {}"]);
+  assert.deepEqual(await run({ exclude_entities: ["automation.b"] }), ['automation_monitor.reset {"entity_id":"automation.a"}']);
+  // Exclusions that hide no failure keep the single call.
+  assert.deepEqual(await run({ exclude_entities: ["light.*"] }), ["automation_monitor.reset {}"]);
+});
+
+test("the failure time tooltip follows the 12 / 24 h setting of the profile", () => {
+  const iso = "2026-10-24T15:00:00Z";
+  const h = (time_format) => ({ language: "en", locale: { language: "en", time_format } });
+  assert.doesNotMatch(fullDate(h("24"), {}, iso), /PM|AM/);
+  assert.match(fullDate(h("12"), {}, iso), /PM|AM/);
+  assert.doesNotMatch(fullDate({ language: "fr", locale: { language: "fr", time_format: "24" } }, {}, iso), /PM|AM/);
+  assert.match(fullDate({ language: "fr", locale: { language: "fr", time_format: "12" } }, {}, iso), /PM|AM/i);
+  assert.equal(fullDate(h("language"), {}, "nope"), "");
+});
+
+test("the editor offers exclude_entities as free text (patterns allowed)", () => {
+  const ed = new AutomationMonitorCardEditor();
+  ed._hass = { states: {}, language: "en" };
+  ed._config = {};
+  const field = ed._schema().find((f) => f.name === "exclude_entities");
+  assert.deepEqual({ ...field.selector.text }, { multiple: true });
 });
