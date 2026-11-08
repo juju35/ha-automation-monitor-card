@@ -1430,13 +1430,16 @@ const computeExcluded = (hass, config) => {
 };
 
 // Entities to ignore, from exclude_entities: entity ids or patterns with * (any characters) and ? (one
-// character), case-insensitive. Returns a predicate on an entity id, or null when nothing is excluded; one
-// per exclude_entities value, cached.
-const _entityMatchers = new Map();
+// character), case-insensitive. Returns a predicate on an entity id, or null when nothing is excluded; only
+// the one for the last exclude_entities value is cached, so editing the option does not pile up matchers.
+const _entityMatcherCache = { key: undefined, matcher: null };
 const excludedEntities = (config) => {
   const key = JSON.stringify(config.exclude_entities ?? null);
-  if (!_entityMatchers.has(key)) _entityMatchers.set(key, entityMatcher(config.exclude_entities));
-  return _entityMatchers.get(key);
+  if (_entityMatcherCache.key !== key) {
+    _entityMatcherCache.key = key;
+    _entityMatcherCache.matcher = entityMatcher(config.exclude_entities);
+  }
+  return _entityMatcherCache.matcher;
 };
 
 const entityMatcher = (value) => {
@@ -1904,8 +1907,8 @@ class AutomationMonitorBase extends HTMLElement {
   _confirmHtml() {
     const c = this._confirm;
     return `<style>${DIALOG_STYLE}</style><div class="backdrop" data-action="confirm_backdrop">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="msg">${esc(c.text)}</div>
+      <div class="modal" role="dialog" aria-modal="true" aria-describedby="confirm-msg">
+        <div class="msg" id="confirm-msg">${esc(c.text)}</div>
         <div class="modal-actions">
           <button class="btn" data-action="confirm_cancel"><span>${esc(this._t("cancel"))}</span></button>
           <button class="btn primary" data-action="confirm_ok"><span>${esc(c.ok)}</span></button>
@@ -1991,7 +1994,7 @@ class AutomationMonitorBase extends HTMLElement {
         )}"><span class="dot"></span><span class="txt">${esc(status.text)}</span></span>
         ${
           this._admin
-            ? `<button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}">${svgIcon(ICONS.refresh)}</button>`
+            ? `<button class="refresh ${this._refreshing ? "spin" : ""}" data-action="rebuild" title="${esc(`${this._t("rebuild")} · ${this._t("rebuild_title")}`)}" aria-label="${esc(this._t("rebuild"))}">${svgIcon(ICONS.refresh)}</button>`
             : ""
         }
         ${this._zoomButton()}
@@ -2304,7 +2307,8 @@ class AutomationMonitorMiniCard extends AutomationMonitorCard {
   _zoomButton() {
     if (this._config.zoom === false) return "";
     const z = this._zoomed;
-    return `<button class="zoom" title="${esc(this._t(z ? "zoom_out" : "zoom_in"))}">${svgIcon(z ? ICONS.collapse : ICONS.expand)}</button>`;
+    const label = esc(this._t(z ? "zoom_out" : "zoom_in"));
+    return `<button class="zoom" title="${label}" aria-label="${label}" aria-expanded="${z}">${svgIcon(z ? ICONS.collapse : ICONS.expand)}</button>`;
   }
 
   _render() {
