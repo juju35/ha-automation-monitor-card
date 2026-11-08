@@ -29,10 +29,11 @@ The cards are built on top of the Automation Monitor integration: its two sensor
 - **Trace** and **Edit** buttons opening the automation's trace and editor in Home Assistant
 - **Clear** a failure (or **Clear all**) with the integration's `automation_monitor.reset` action, with confirmation
 - Unavailable linked entities: name, entity id, how long it has been unavailable and the automations, scripts and scenes that use it (click one to open its editor)
-- **Refresh** button in the header of both cards, always visible, rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
+- **Refresh** button in the header of both cards, rebuilding the list of linked entities (`automation_monitor.rebuild_linked_entities`)
 - Detail button at the top right of the mini card: it switches to the full card and back; a click anywhere outside the card brings the compact view back
 - Failed automations and unavailable linked entities are folded by default: click the section title to unfold them; long lists are cut to a configurable number of items, with a "Show more" button
 - Click a counter, an automation or an entity to open its Home Assistant more-info dialog
+- Trace, Edit, Clear, Clear all, Refresh and the editor links under **Used by** are for administrators only: other users don't see them (a **Used by** item opens its more-info dialog instead)
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Narrow cards (6 columns of the Sections view, the mini card's default size, down to ~156 px on a phone) stay readable: below ~384 px **Clear all** shows only its icon and the counters stack; the icon gets smaller below 320 px and is hidden below 280 px, so the status chip keeps its whole label; below 245 px the chip shrinks to its dot (its text stays in the tooltip)
 - Light and dark mode, English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek
@@ -106,6 +107,9 @@ hide_when_ok: false
 exclude_devices:
   - Garage door sensor
   - 4f1c2e9d8b7a6c5d4e3f2a1b0c9d8e7f
+exclude_entities:
+  - automation.test_*
+  - sensor.guest_room_temperature
 language: fr
 ```
 
@@ -129,11 +133,12 @@ language: fr
 | `expand_failed` | full | `false` | Failed automations expanded when the card loads (click the section title to fold / unfold) |
 | `expand_linked` | full | `false` | Unavailable linked entities expanded when the card loads (click the section title to fold / unfold) |
 | `show_details` | full | `true` | Error message of each failed automation |
-| `show_controls` | full | `true` | Clear and Clear all buttons (the Trace and Edit links and the Refresh button are always shown) |
+| `show_controls` | full | `true` | Clear and Clear all buttons (administrators only, like the Trace and Edit links and the Refresh button) |
 | `max_items` | full | `5` | Items shown per list before the "Show more" button |
 | `hide_when_ok` | both | `false` | Hide the card while all is good (no failed automation, no unavailable linked entity among the lists shown). Never hidden while a sensor can't be read, nor while the dashboard is being edited |
 | `zoom` | mini | `true` | Detail button at the top right: switches to the full card and back (`false` removes it) |
 | `exclude_devices` | both | — | Devices to ignore: their unavailable linked entities (and failed automations attached to them) are left out of the lists, counters and status. Device ids (written by the visual editor) or device names |
+| `exclude_entities` | both | — | Entities to ignore: failed automations and unavailable linked entities whose entity id matches are left out of the lists, counters and status. Entity ids or patterns with `*` (any characters) and `?` (one character), e.g. `automation.test_*`; case-insensitive |
 | `failed_entity` | both | Auto | Failed automations sensor, only needed if it can't be found automatically |
 | `linked_entity` | both | Auto | Unavailable linked entities sensor, only needed if it can't be found automatically |
 | `language` | both | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt`, `pl`, `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `sk`, `cs`, `sl`, `lv` or `el` (auto-detects from HA settings) |
@@ -177,7 +182,7 @@ The integration exposes two sensors: **Failed automations**, whose `automations`
 
 The **Trace** and **Edit** buttons use the automation's id: they work for automations created in the UI (or with an `id:` in YAML). Scripts and scenes listed under **Used by** open their editor the same way.
 
-**Clear** calls `automation_monitor.reset` for one automation, **Clear all** for all of them: the failure disappears until the automation fails again. **Refresh** calls `automation_monitor.rebuild_linked_entities`, useful right after editing a script or a scene.
+**Clear** calls `automation_monitor.reset` for one automation, **Clear all** for all of them: the failure disappears until the automation fails again. When `exclude_devices` or `exclude_entities` hide some failed automations, **Clear all** only clears the ones listed (one call per automation) and leaves the hidden ones untouched. **Refresh** calls `automation_monitor.rebuild_linked_entities`, useful right after editing a script or a scene.
 
 What counts as a failure, the unavailability threshold, the exclusions and the Repairs issues are set in the integration's options: see its [documentation](https://github.com/olli-dot-dev/ha-automation-monitor#configuration).
 

@@ -71,7 +71,7 @@ async function openCard(browser, s) {
       const el = document.createElement(type);
       el.setConfig({ type: `custom:${type}`, ...config });
       el.hass = {
-        states, entities, language: "en", locale: { language: "en" }, callService: () => {},
+        states, entities, language: "en", locale: { language: "en" }, user: { is_admin: true }, callService: () => {},
       };
       document.getElementById("root").appendChild(el);
       // A mouse click (detail 1) on the detail button: the zoomed-in view, without a keyboard focus ring.

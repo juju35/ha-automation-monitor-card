@@ -41,7 +41,7 @@ const run = async ({ focus, next, noMoveBefore = false }) => {
   const res = await page.evaluate(
     ({ states, entities, focus, next, FAILED }) => {
       window.calls = [];
-      const hass = (st) => ({ states: st, entities, language: "en", callService: (d, s, data) => window.calls.push(`${d}.${s} ${data.entity_id}`) });
+      const hass = (st) => ({ states: st, entities, language: "en", user: { is_admin: true }, callService: (d, s, data) => window.calls.push(`${d}.${s} ${data.entity_id}`) });
       const el = document.createElement("automation-monitor-card");
       el.setConfig({ type: "custom:automation-monitor-card", expand_failed: true, show_linked: false });
       el.hass = hass(states);
@@ -104,7 +104,7 @@ test("section toggle: Enter and Space fold the list and keep the focus, Clear al
     ({ states, entities }) => {
       const el = document.createElement("automation-monitor-card");
       el.setConfig({ type: "custom:automation-monitor-card", show_linked: false });
-      el.hass = { states, entities, language: "en", callService: () => {} };
+      el.hass = { states, entities, language: "en", user: { is_admin: true }, callService: () => {} };
       document.getElementById("root").appendChild(el);
       el.shadowRoot.querySelector('[data-section="failed"] .toggle').focus();
     },
@@ -160,7 +160,7 @@ test("mini card detail button on Enter: the focus comes back without scrolling",
       };
       const el = document.createElement("automation-monitor-mini-card");
       el.setConfig({ type: "custom:automation-monitor-mini-card" });
-      el.hass = { states, entities, language: "en", callService: () => {} };
+      el.hass = { states, entities, language: "en", user: { is_admin: true }, callService: () => {} };
       document.getElementById("root").appendChild(el);
       el.shadowRoot.querySelector(".zoom").dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 0 }));
       return { zoomed: el._zoomed, focused: el.shadowRoot.activeElement?.classList.contains("zoom") ?? false, args };
