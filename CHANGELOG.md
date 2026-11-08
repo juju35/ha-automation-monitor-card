@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.16.1 - 2026-11-08
+
+### Fixes
+- Cards: the Refresh and detail buttons, which only show an icon, now have an accessible name, the detail button tells screen readers whether the full card is shown, and the confirmation popup is announced with its message.
+- Cards: only the filter of the current Ignored entities value is kept in memory, instead of one per value ever used.
+
 ## 1.16.0 - 2026-11-07
 
 ### What's new

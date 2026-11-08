@@ -12,6 +12,7 @@ const {
   editorPath,
   excludedDevices,
   excludedEntities,
+  _entityMatcherCache,
   fullDate,
   rtfFor,
   DIALOG_STYLE,
@@ -33,6 +34,7 @@ const {
   "editorPath",
   "excludedDevices",
   "excludedEntities",
+  "_entityMatcherCache",
   "fullDate",
   "STRINGS",
   "lang",
@@ -176,7 +178,7 @@ test("the mini card detail button switches to the full card content and back", (
   assert.match(el.html, /class="line crit/);
   assert.match(el.html, />Failed</);
   // Rightmost header element, after the status pill and the Refresh button.
-  assert.match(el.html, /class="chip[\s\S]*?class="refresh[\s\S]*?<button class="zoom" title="Show the full card">[\s\S]*?<\/button>\s*<\/div>/);
+  assert.match(el.html, /class="chip[\s\S]*?class="refresh[\s\S]*?<button class="zoom" title="Show the full card" aria-label="Show the full card" aria-expanded="false">[\s\S]*?<\/button>\s*<\/div>/);
   assert.equal(el.getCardSize(), 3);
   let stopped = false;
   el._zoomClick({ ...zoomButton(), stopPropagation: () => (stopped = true) });
@@ -184,7 +186,7 @@ test("the mini card detail button switches to the full card content and back", (
   assert.equal(el._zoomed, true);
   assert.doesNotMatch(el.html, /class="line/);
   assert.equal(el.html.replace(/<button class="zoom"[\s\S]*?<\/button>/, ""), full._render());
-  assert.match(el.html, /<button class="zoom" title="Back to the compact view">/);
+  assert.match(el.html, /<button class="zoom" title="Back to the compact view" aria-label="Back to the compact view" aria-expanded="true">/);
   assert.equal(el.getCardSize(), full.getCardSize());
   assert.deepEqual({ ...el.getGridOptions() }, { ...full.getGridOptions() });
   el._zoomClick(zoomButton());
@@ -822,4 +824,26 @@ test("the editor offers exclude_entities as free text (patterns allowed)", () =>
   ed._config = {};
   const field = ed._schema().find((f) => f.name === "exclude_entities");
   assert.deepEqual({ ...field.selector.text }, { multiple: true });
+});
+
+test("only the matcher of the last exclude_entities value is cached", () => {
+  const a = excludedEntities({ exclude_entities: ["automation.a"] });
+  for (let i = 0; i < 50; i++) excludedEntities({ exclude_entities: [`automation.x${i}`] });
+  const b = excludedEntities({ exclude_entities: ["automation.b"] });
+  assert.deepEqual(Object.keys(_entityMatcherCache), ["key", "matcher"]);
+  assert.equal(_entityMatcherCache.key, JSON.stringify(["automation.b"]));
+  assert.equal(_entityMatcherCache.matcher, b);
+  assert.equal(excludedEntities({ exclude_entities: ["automation.b"] }), b);
+  const a2 = excludedEntities({ exclude_entities: ["automation.a"] });
+  assert.notEqual(a2, a);
+  assert.equal(a2("automation.a"), true);
+});
+
+test("icon-only buttons have an accessible name and the confirm popup is described by its message", () => {
+  const el = zoomCard();
+  assert.match(el.html, /<button class="refresh [^"]*" data-action="rebuild" title="[^"]*" aria-label="Refresh">/);
+  el._confirm = { text: "Clear all?", ok: "OK" };
+  const html = el._confirmHtml();
+  assert.match(html, /role="dialog" aria-modal="true" aria-describedby="confirm-msg"/);
+  assert.match(html, /<div class="msg" id="confirm-msg">Clear all\?<\/div>/);
 });
