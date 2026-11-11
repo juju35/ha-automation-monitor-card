@@ -1,5 +1,10 @@
 # ha-automation-monitor-card
 
+<p align="center"><img src="https://raw.githubusercontent.com/juju35/ha-automation-monitor-card/main/images/archived.svg" alt="Archived: no longer updated, now part of System Hub" width="800"></p>
+
+> [!WARNING]
+> **Deprecated, this repository is archived.** The Automation Monitor cards are now served by [System Hub](https://github.com/juju35/ha-system-hub), under the same names (`custom:automation-monitor-card`, `custom:automation-monitor-mini-card`). No more updates are published here: install System Hub, then remove this card's dashboard resource so it is not registered twice. See [Migrating](https://github.com/juju35/ha-system-hub#migrating).
+
 [![Marketplace](https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace/)
 [![HACS Validation](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/hacs.yml)
 [![Validate](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-automation-monitor-card/actions/workflows/validate.yml)
