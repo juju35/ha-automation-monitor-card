@@ -8,6 +8,7 @@ on:
       - "src/**"
       - "scripts/**"
       - "test/pixels.test.mjs"
+      - ".github/workflows/screenshots.yml"
       # The logo is inlined into the build, and package-lock.json pins the playwright used to render
       # (a Dependabot bump of playwright only touches package.json and the lock).
       - "images/**"
